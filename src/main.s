@@ -439,6 +439,9 @@ show_menu:
 
 @ Get input function
 get_input:
+    @ ARM calling convention: preserve lr for nested function calls
+    push {lr}
+    
     @ Log input wait
     ldr r1, =log_input
     mov r2, #log_input_len
@@ -459,6 +462,9 @@ get_input:
     @ Load the character
     ldr r1, =input_buffer
     ldrb r0, [r1]
+    
+    @ Restore link register and return
+    pop {lr}
     bx lr
 
 @ Send error handler
