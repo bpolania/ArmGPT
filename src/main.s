@@ -36,6 +36,9 @@ custom_prompt_len = . - custom_prompt
 continuous_msg: .ascii "Sending continuous data... (press Ctrl+C to stop)\n"
 continuous_len = . - continuous_msg
 
+test_msg: .ascii "TEST: Reached critical section\n"
+test_len = . - test_msg
+
 @ Log messages
 log_startup: .ascii "[STARTUP] Acorn Communication Simulator started\n"
 log_startup_len = . - log_startup
@@ -112,13 +115,21 @@ _start:
     mov r7, #SYS_WRITE
     swi 0
     
+    @ TEST: Skip serial initialization and logging
+    @ Just print a simple message to see if we can get past this point
+    mov r0, #STDOUT
+    ldr r1, =test_msg
+    mov r2, #test_len
+    mov r7, #SYS_WRITE
+    swi 0
+    
     @ Initialize serial port
-    bl init_serial
+    @bl init_serial
     
     @ Log before storing file descriptor
-    ldr r1, =log_store_fd
-    mov r2, #log_store_fd_len
-    bl write_log
+    @ldr r1, =log_store_fd
+    @mov r2, #log_store_fd_len
+    @bl write_log
     
     @ Store file descriptor (even if -1 for error)
     ldr r1, =serial_fd

@@ -94,6 +94,14 @@ build-errors: $(MAIN_SRC)
 		echo "✅ Build completed successfully"; \
 	fi
 
+# Test minimal version
+test-minimal: test_minimal.s
+	@echo "Building minimal test..."
+	as -o test_minimal.o test_minimal.s -I$(INCLUDE_DIR)
+	ld -o test_minimal test_minimal.o
+	@echo "Running minimal test..."
+	./test_minimal
+
 # Help target
 help:
 	@echo "Available targets:"
