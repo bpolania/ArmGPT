@@ -72,6 +72,60 @@ All notable changes to the ARM Assembly Cross-Platform Serial Communication Proj
 - Systematic debugging approach with sequential log tracking
 - Register corruption analysis and ARM assembly debugging techniques
 
+## [0.6.0] - 2025-07-08 - Interactive Menu System Complete
+
+### 🎯 Interactive Menu Framework Fully Functional
+
+#### Major Achievement
+- **Complete interactive menu system** working on both Mac and Raspberry Pi
+- **User input processing** with proper choice recognition and action execution
+- **Clean menu loop** with consistent flow and logging
+- **Foundation ready** for serial communication feature implementation
+
+#### Interactive Features Implemented
+- **Menu display** with 4 options: test message, continuous data, custom message, exit
+- **User input handling** with whitespace filtering and proper character processing
+- **Choice processing** correctly routing to appropriate action functions
+- **Action execution** confirmed working (send_test function logging and execution)
+- **Menu loop** returning to menu after each action for continuous operation
+
+#### ARM Calling Convention Fixes Applied
+- **show_menu function** - proper lr preservation for nested write_log calls
+- **get_input function** - ARM calling convention compliance for stable returns
+- **Consistent pattern** for all functions making nested bl calls
+
+#### Input Processing Improvements
+- **Whitespace filtering** - skip newlines, spaces, and carriage returns
+- **Single character processing** - eliminate double input reading issues
+- **Clean logging flow** - single debug entry per user interaction
+- **Reliable menu choice recognition** - consistent option 1-4 processing
+
+#### Validation Results
+**Raspberry Pi Log Pattern:**
+```
+[STARTUP] → [DEBUG] Entering main loop → [DEBUG] Showing menu → 
+[DEBUG] Waiting for user input → [DEBUG] User input received → 
+[ACTION] Sending test message → [DEBUG] Showing menu → (repeat)
+```
+
+**macOS Compatibility:** All features work on Mac simulation platform
+
+#### Technical Architecture
+- **Cross-platform foundation** ready for serial communication implementation
+- **Modular action functions** prepared for real serial port integration
+- **Comprehensive logging** for debugging and monitoring
+- **ARM assembly best practices** with proper calling conventions
+
+### Files Modified
+- `src/main.s` - Interactive menu system, ARM calling convention fixes, input processing
+- `CHANGELOG.md` - Comprehensive documentation of implementation journey
+
+### Ready for Next Phase
+- **Serial port configuration** (9600 baud, 8N1 settings)
+- **Real serial device integration** (replace /dev/null fallback)
+- **Hardware testing** with actual serial communication
+- **Advanced features** (continuous transmission, custom messages)
+
 ## [0.5.0] - 2025-07-08 - ARM Calling Convention Fix - RESOLVED
 
 ### 🎉 BREAKTHROUGH: Complete Resolution of write_log Hang Issue
