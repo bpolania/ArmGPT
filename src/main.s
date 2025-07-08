@@ -124,7 +124,7 @@ _start:
     swi 0
     
     @ Initialize serial port
-    @bl init_serial
+    bl init_serial
     
     @ Log before storing file descriptor
     @ldr r1, =log_store_fd
