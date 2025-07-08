@@ -1,4 +1,5 @@
 [STARTUP] Acorn Communication Simulator started
 [DEBUG] Entering main loop
 [DEBUG] Showing menu
-[EXIT] Program terminated normally
+[DEBUG] Waiting for user input
+[DEBUG] User input received
