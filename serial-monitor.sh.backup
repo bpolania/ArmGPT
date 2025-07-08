@@ -3,7 +3,7 @@
 # SINGLE PI TESTING - Limited by hardware loopback requirements
 # For dual Pi testing, use serial-monitor-receiver.sh on the second Pi
 
-DEVICE="/dev/ttyUSB0"
+DEVICE="/dev/serial0"
 BAUDRATE="9600"
 LOG_FILE="serial_monitor.log"
 

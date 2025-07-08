@@ -2,7 +2,7 @@
 # Serial Monitor for Receiver Pi - Dual Pi Communication Testing
 # This script should run on Pi 2 (Receiver) to monitor incoming data from Pi 1
 
-DEVICE="/dev/serial0"
+DEVICE="/dev/ttyUSB0"
 BAUDRATE="9600"
 LOG_FILE="receiver_monitor.log"
 
