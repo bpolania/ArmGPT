@@ -144,24 +144,21 @@ main_loop:
     @ Show menu
     bl show_menu
     
-    @ BYPASS TEST: Exit after showing menu once instead of waiting for input
-    b exit_program
-    
-    @ Get user choice (commented out for bypass testing)
-    @bl get_input
+    @ Get user choice
+    bl get_input
     
     @ Process choice
-    @cmp r0, #'1'
-    @beq send_test
-    @cmp r0, #'2'
-    @beq send_continuous
-    @cmp r0, #'3'
-    @beq send_custom
-    @cmp r0, #'4'
-    @beq exit_program
+    cmp r0, #'1'
+    beq send_test
+    cmp r0, #'2'
+    beq send_continuous
+    cmp r0, #'3'
+    beq send_custom
+    cmp r0, #'4'
+    beq exit_program
     
     @ Invalid choice, loop again
-    @b main_loop
+    b main_loop
 
 @ Send test message function
 send_test:
