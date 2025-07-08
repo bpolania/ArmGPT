@@ -1,0 +1,19 @@
+# Build artifacts
+*.o
+*.exe
+*.obj
+
+# Binaries
+acorn_comm
+acorn_comm_mac*
+test_minimal
+
+# Mac specific generated files
+src/main_mac*.s
+
+# Logs (tracked for debugging but ignored in future)
+build.log
+errors.log
+
+# macOS system files
+.DS_Store
