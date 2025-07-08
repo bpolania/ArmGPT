@@ -1,0 +1,14 @@
+=== RECEIVER PI - ARM Assembly Serial Monitor ===
+Receiving from: /dev/serial0
+Baud Rate: 9600
+Log File: receiver_monitor.log
+Started: Tue  8 Jul 23:03:56 BST 2025
+Waiting for data from SENDER PI...
+Press Ctrl+C to stop monitoring
+========================================
+[0;34m[23:04:00][0m Waiting for data from SENDER PI... (Messages received: 0)
+[0;34m[23:04:10][0m Waiting for data from SENDER PI... (Messages received: 0)
+[0;34m[23:04:20][0m Waiting for data from SENDER PI... (Messages received: 0)
+[0;34m[23:04:30][0m Waiting for data from SENDER PI... (Messages received: 0)
+[0;34m[23:04:40][0m Waiting for data from SENDER PI... (Messages received: 0)
+[1;33mMonitoring stopped at Tue  8 Jul 23:04:49 BST 2025[0m
