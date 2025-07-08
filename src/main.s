@@ -79,6 +79,12 @@ log_main_loop_len = . - log_main_loop
 log_store_fd: .ascii "[DEBUG] Storing file descriptor\n"
 log_store_fd_len = . - log_store_fd
 
+log_serial_write: .ascii "[DEBUG] Serial write attempted\n"
+log_serial_write_len = . - log_serial_write
+
+log_serial_result: .ascii "[DEBUG] Serial write result: \n"
+log_serial_result_len = . - log_serial_result
+
 @ Timestamp format strings
 timestamp_prefix: .ascii "["
 bracket_close: .ascii "] "
@@ -178,6 +184,13 @@ send_test:
     ldr r0, =serial_fd
     ldr r0, [r0]
     
+    @ Log serial write attempt
+    push {r0, r1, r2, lr}
+    ldr r1, =log_serial_write
+    mov r2, #log_serial_write_len
+    bl write_log
+    pop {r0, r1, r2, lr}
+    
     @ Check if serial port is available
     cmp r0, #0
     ble serial_unavailable
@@ -186,6 +199,13 @@ send_test:
     mov r2, #test_len
     mov r7, #SYS_WRITE
     swi 0
+    
+    @ Log serial write result
+    push {r0, r1, r2, lr}
+    ldr r1, =log_serial_result
+    mov r2, #log_serial_result_len
+    bl write_log
+    pop {r0, r1, r2, lr}
     
     @ Check for errors
     cmp r0, #0
