@@ -103,10 +103,10 @@ _start:
     @ Initialize log file first
     bl init_log
     
-    @ Log startup message
-    ldr r1, =log_startup
-    mov r2, #log_startup_len
-    bl write_log
+    @ BYPASS: Temporarily disable startup write_log to test hang location
+    @ldr r1, =log_startup
+    @mov r2, #log_startup_len
+    @bl write_log
     
     @ Print platform message
     mov r0, #STDOUT
@@ -135,10 +135,10 @@ _start:
     ldr r1, =serial_fd
     str r0, [r1]
     
-    @ Log entering main loop
-    ldr r1, =log_main_loop
-    mov r2, #log_main_loop_len
-    bl write_log
+    @ BYPASS: Temporarily disable main loop write_log to test hang location
+    @ldr r1, =log_main_loop
+    @mov r2, #log_main_loop_len
+    @bl write_log
     
 main_loop:
     @ Show menu
@@ -408,16 +408,10 @@ init_error:
 
 @ Show menu function
 show_menu:
-    @ Save registers before write_log call
-    push {r0, r3, r4, r5, r6, r7, lr}
-    
-    @ Log menu display with explicit register setup
-    ldr r1, =log_menu
-    mov r2, #log_menu_len
-    bl write_log
-    
-    @ Restore registers
-    pop {r0, r3, r4, r5, r6, r7, lr}
+    @ BYPASS: Keep write_log disabled until we understand the hang better
+    @ldr r1, =log_menu
+    @mov r2, #log_menu_len
+    @bl write_log
     
     mov r0, #STDOUT
     ldr r1, =menu_msg
