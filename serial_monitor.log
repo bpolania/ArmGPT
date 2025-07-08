@@ -2,6 +2,7 @@
 Device: /dev/serial0
 Baud Rate: 9600
 Log File: serial_monitor.log
-Started: Tue  8 Jul 22:48:51 BST 2025
+Started: Tue  8 Jul 22:51:41 BST 2025
 Press Ctrl+C to stop monitoring
 ========================================
+[1;33mMonitoring stopped at Tue  8 Jul 22:51:58 BST 2025[0m
