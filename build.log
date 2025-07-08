@@ -1,0 +1,20 @@
+Building native ARM assembly...
+as -o acorn_comm.o src/main.s -Iinclude
+src/main.s: Assembler messages:
+src/main.s: Warning: end of file not at end of a line; newline inserted
+include/linux_syscalls.inc: Warning: end of file not at end of a line; newline inserted
+src/main.s:315: Error: attempt to store non-zero value in section `.bss'
+src/main.s:315: Error: attempt to store non-zero value in section `.bss'
+src/main.s:315: Error: attempt to store non-zero value in section `.bss'
+src/main.s:315: Error: attempt to store non-zero value in section `.bss'
+src/main.s:315: Error: attempt to store non-zero value in section `.bss'
+src/main.s:315: Error: attempt to store non-zero value in section `.bss'
+src/main.s:315: Error: attempt to store non-zero value in section `.bss'
+src/main.s:315: Error: attempt to store non-zero value in section `.bss'
+src/main.s:315: Error: attempt to store non-zero value in section `.bss'
+src/main.s:315: Error: attempt to store non-zero value in section `.bss'
+src/main.s:315: Error: attempt to store non-zero value in section `.bss'
+src/main.s:315: Error: attempt to store non-zero value in section `.bss'
+src/main.s:315: Error: attempt to store non-zero value in section `.bss'
+src/main.s:143: Error: invalid constant (f4240) after fixup
+make: *** [Makefile:15: acorn_comm] Error 1
