@@ -1,6 +1,6 @@
 [STARTUP] Acorn Communication Simulator started
-[SERIAL] Initializing serial port /dev/ttyS0
-[ERROR] Serial port initialization failed
+[SERIAL] Initializing serial port /dev/serial0
+[SERIAL] Serial port initialized successfully
 [DEBUG] Entering main loop
 [DEBUG] Showing menu
 [DEBUG] Waiting for user input
@@ -9,6 +9,4 @@
 [DEBUG] Showing menu
 [DEBUG] Waiting for user input
 [DEBUG] User input received
-[ACTION] Sending test message
-[DEBUG] Showing menu
-[DEBUG] Waiting for user input
+[EXIT] Program terminated normally
