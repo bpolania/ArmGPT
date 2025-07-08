@@ -506,8 +506,8 @@ log_error:
 @ Write to log file function (simplified)
 @ Parameters: r1 = message address, r2 = message length
 write_log:
-    @ Save registers
-    push {r0, r3, r4, lr}
+    @ Save ALL registers that might be modified
+    push {r0, r1, r2, r3, r4, r5, r6, r7, lr}
     
     @ Get log file descriptor
     ldr r0, =log_fd
@@ -517,12 +517,12 @@ write_log:
     cmp r0, #0
     ble write_log_exit
     
-    @ Write message to log file
+    @ Write message to log file (r0=fd, r1=buffer, r2=length already set)
     mov r7, #SYS_WRITE
     swi 0
     
 write_log_exit:
-    @ Restore registers
-    pop {r0, r3, r4, lr}
+    @ Restore ALL registers
+    pop {r0, r1, r2, r3, r4, r5, r6, r7, lr}
     bx lr
 
