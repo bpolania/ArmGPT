@@ -73,6 +73,9 @@ log_input_received_len = . - log_input_received
 log_main_loop: .ascii "[DEBUG] Entering main loop\n"
 log_main_loop_len = . - log_main_loop
 
+log_store_fd: .ascii "[DEBUG] Storing file descriptor\n"
+log_store_fd_len = . - log_store_fd
+
 @ Timestamp format strings
 timestamp_prefix: .ascii "["
 bracket_close: .ascii "] "
@@ -111,6 +114,11 @@ _start:
     
     @ Initialize serial port
     bl init_serial
+    
+    @ Log before storing file descriptor
+    ldr r1, =log_store_fd
+    mov r2, #log_store_fd_len
+    bl write_log
     
     @ Store file descriptor (even if -1 for error)
     ldr r1, =serial_fd
