@@ -408,10 +408,16 @@ init_error:
 
 @ Show menu function
 show_menu:
-    @ BYPASS: Temporarily disable write_log to test hang theory
-    @ldr r1, =log_menu
-    @mov r2, #log_menu_len
-    @bl write_log
+    @ Save registers before write_log call
+    push {r0, r3, r4, r5, r6, r7, lr}
+    
+    @ Log menu display with explicit register setup
+    ldr r1, =log_menu
+    mov r2, #log_menu_len
+    bl write_log
+    
+    @ Restore registers
+    pop {r0, r3, r4, r5, r6, r7, lr}
     
     mov r0, #STDOUT
     ldr r1, =menu_msg
