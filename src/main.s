@@ -447,6 +447,8 @@ get_input:
     mov r2, #log_input_len
     bl write_log
     
+    @ Read input until we get a valid menu choice
+get_input_loop:
     @ Read single character from stdin
     mov r0, #STDIN
     ldr r1, =input_buffer
@@ -454,14 +456,24 @@ get_input:
     mov r7, #SYS_READ
     swi 0
     
-    @ Log input received
-    ldr r1, =log_input_received
-    mov r2, #log_input_received_len
-    bl write_log
-    
     @ Load the character
     ldr r1, =input_buffer
     ldrb r0, [r1]
+    
+    @ Skip whitespace characters (newline, space, etc.)
+    cmp r0, #10    @ newline
+    beq get_input_loop
+    cmp r0, #13    @ carriage return
+    beq get_input_loop
+    cmp r0, #32    @ space
+    beq get_input_loop
+    
+    @ Log input received for valid character
+    push {r0}
+    ldr r1, =log_input_received
+    mov r2, #log_input_received_len
+    bl write_log
+    pop {r0}
     
     @ Restore link register and return
     pop {lr}
