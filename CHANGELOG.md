@@ -72,6 +72,18 @@ All notable changes to the ARM Assembly Cross-Platform Serial Communication Proj
 - Systematic debugging approach with sequential log tracking
 - Register corruption analysis and ARM assembly debugging techniques
 
+## [0.7.1] - 2025-07-08 - Serial Device Configuration Update
+
+### Fixed
+- **Serial device path corrected** from `/dev/ttyAMA0` to `/dev/serial0` based on device detection
+- **Device compatibility** updated for current Raspberry Pi hardware configuration
+- **Log messages** updated to reflect actual device path being used
+
+### Technical Details
+- **Device detection results** showed `/dev/ttyAMA0` does not exist on this Pi model
+- **Working device** `/dev/serial0` -> `/dev/ttyAMA10` confirmed accessible with proper permissions
+- **Hardware compatibility** improved for modern Raspberry Pi configurations
+
 ## [0.7.0] - 2025-07-08 - Serial Port Implementation and Device Discovery
 
 ### 🔌 Real Serial Communication Implementation
@@ -110,7 +122,7 @@ All notable changes to the ARM Assembly Cross-Platform Serial Communication Proj
 
 #### Serial Communication Flow
 ```
-[STARTUP] → [SERIAL] Initializing serial port /dev/ttyAMA0 → 
+[STARTUP] → [SERIAL] Initializing serial port /dev/serial0 → 
 [SERIAL] Serial port initialized successfully OR [ERROR] Serial port initialization failed →
 [DEBUG] Entering main loop → [ACTION] Sending test message → (serial output)
 ```
@@ -137,7 +149,7 @@ All notable changes to the ARM Assembly Cross-Platform Serial Communication Proj
 ### Hardware Requirements
 - **Raspberry Pi** with UART enabled (raspi-config → Interface Options → Serial)
 - **Serial device access** (user in dialout group or sudo privileges)
-- **Available serial port** (/dev/ttyAMA0, /dev/serial0, or USB-serial adapter)
+- **Available serial port** (/dev/serial0, /dev/ttyAMA0, or USB-serial adapter)
 
 ### Testing and Validation
 - **Mac simulation** continues to work with simulated serial behavior
