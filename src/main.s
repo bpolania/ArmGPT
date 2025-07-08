@@ -40,9 +40,6 @@ continuous_len = . - continuous_msg
 serial_fd: .space 4
 input_buffer: .space 256
 counter: .space 4
-
-@ Buffer for termios structure (36 bytes for ARM)
-.align 4
 termios_buf: .space 36
 
 @ Main program entry point
