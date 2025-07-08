@@ -397,14 +397,25 @@ init_log:
     mov r1, #O_WRONLY
     orr r1, r1, #O_CREAT
     orr r1, r1, #O_APPEND
-    mov r2, #0644    @ File permissions
+    mov r2, #420    @ File permissions (0644 octal = 420 decimal)
     mov r7, #SYS_OPEN
     swi 0
+    
+    @ Check for error
+    cmp r0, #0
+    blt log_error
     
     @ Store log file descriptor
     ldr r1, =log_fd
     str r0, [r1]
     
+    bx lr
+
+log_error:
+    @ If log file creation fails, store -1 to indicate no logging
+    ldr r1, =log_fd
+    mov r0, #-1
+    str r0, [r1]
     bx lr
 
 @ Write to log file function
@@ -417,10 +428,15 @@ write_log:
     ldr r0, =log_fd
     ldr r0, [r0]
     
+    @ Check if logging is available
+    cmp r0, #0
+    ble write_log_exit
+    
     @ Write message to log file
     mov r7, #SYS_WRITE
     swi 0
     
+write_log_exit:
     @ Restore registers
     pop {r0, r3, r4, lr}
     bx lr
