@@ -74,11 +74,33 @@ show-serial:
 	@echo "Available serial devices:"
 	@ls -la /dev/tty* | grep -E "(ttyS|ttyUSB|ttyACM)"
 
+# Build with logging
+build-log: $(MAIN_SRC)
+	@echo "Building with full logging..."
+	@echo "Build started at: $(shell date)" > build.log
+	as -o $(TARGET).o $(MAIN_SRC) -I$(INCLUDE_DIR) 2>&1 | tee -a build.log
+	ld -o $(TARGET) $(TARGET).o 2>&1 | tee -a build.log
+	@echo "Build completed at: $(shell date)" >> build.log
+
+# Build with error logging only
+build-errors: $(MAIN_SRC)
+	@echo "Building with error logging..."
+	as -o $(TARGET).o $(MAIN_SRC) -I$(INCLUDE_DIR) 2> errors.log
+	ld -o $(TARGET) $(TARGET).o 2>> errors.log
+	@if [ -s errors.log ]; then \
+		echo "❌ Build errors found in errors.log"; \
+		cat errors.log; \
+	else \
+		echo "✅ Build completed successfully"; \
+	fi
+
 # Help target
 help:
 	@echo "Available targets:"
 	@echo "  all          - Build native ARM executable"
 	@echo "  cross        - Cross-compile for ARM"
+	@echo "  build-log    - Build with full logging to build.log"
+	@echo "  build-errors - Build with error logging to errors.log"
 	@echo "  clean        - Remove build artifacts"
 	@echo "  test         - Run the program"
 	@echo "  serial-test  - Test with serial monitoring"
@@ -89,4 +111,4 @@ help:
 	@echo "  show-serial  - Show available serial devices"
 	@echo "  help         - Show this help message"
 
-.PHONY: all clean test serial-test debug arch-check install-deps enable-serial show-serial help
+.PHONY: all clean test serial-test debug arch-check install-deps enable-serial show-serial help build-log build-errors
