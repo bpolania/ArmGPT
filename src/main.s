@@ -42,6 +42,9 @@ input_buffer: .space 256
 counter: .space 4
 termios_buf: .space 36
 
+@ Return to text section for code
+.text
+
 @ Main program entry point
 _start:
     @ Print platform message
