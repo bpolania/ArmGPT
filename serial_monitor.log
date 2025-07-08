@@ -1,0 +1,8 @@
+=== ARM Assembly Serial Monitor ===
+Device: /dev/serial0
+Baud Rate: 9600
+Log File: serial_monitor.log
+Started: Tue  8 Jul 22:30:02 BST 2025
+Press Ctrl+C to stop monitoring
+========================================
+[1;33mMonitoring stopped at Tue  8 Jul 22:30:51 BST 2025[0m
