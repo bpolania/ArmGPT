@@ -28,7 +28,7 @@ error_len = . - error_msg
 serial_init_msg: .ascii "Initializing serial port...\n"
 serial_init_len = . - serial_init_msg
 
-serial_device: .ascii "/dev/ttyAMA10\0"
+serial_device: .ascii "/dev/serial0\0"
 dev_null_path: .ascii "/dev/null\0"
 log_file: .ascii "acorn_comm.log\0"
 custom_prompt: .ascii "Enter custom message (max 255 chars): "
@@ -44,7 +44,7 @@ bypass_test_len = . - bypass_test_msg
 log_startup: .ascii "[STARTUP] Acorn Communication Simulator started\n"
 log_startup_len = . - log_startup
 
-log_serial_init: .ascii "[SERIAL] Initializing serial port /dev/ttyAMA10\n"
+log_serial_init: .ascii "[SERIAL] Initializing serial port /dev/serial0\n"
 log_serial_init_len = . - log_serial_init
 
 log_serial_success: .ascii "[SERIAL] Serial port initialized successfully\n"
@@ -85,6 +85,12 @@ log_serial_write_len = . - log_serial_write
 
 log_serial_result: .ascii "[DEBUG] Serial write result: \n"
 log_serial_result_len = . - log_serial_result
+
+log_fallback_attempt: .ascii "[DEBUG] Attempting fallback to /dev/null\n"
+log_fallback_attempt_len = . - log_fallback_attempt
+
+log_fallback_success: .ascii "[DEBUG] Fallback write successful\n"
+log_fallback_success_len = . - log_fallback_success
 
 @ Timestamp format strings
 timestamp_prefix: .ascii "["
@@ -209,6 +215,12 @@ send_test:
     @ If serial write failed, try writing to /dev/null for testing
     @ This ensures the program continues to work even without proper serial setup
     push {r0, r1, r2, lr}
+    ldr r1, =log_fallback_attempt
+    mov r2, #log_fallback_attempt_len
+    bl write_log
+    pop {r0, r1, r2, lr}
+    
+    push {r0, r1, r2, lr}
     ldr r0, =dev_null_path
     mov r1, #O_WRONLY
     mov r2, #0
@@ -229,6 +241,13 @@ send_test:
     mov r0, r4
     mov r7, #SYS_CLOSE
     swi 0
+    
+    @ Log fallback success and simulate successful write
+    push {r0, r1, r2, lr}
+    ldr r1, =log_fallback_success
+    mov r2, #log_fallback_success_len
+    bl write_log
+    pop {r0, r1, r2, lr}
     
     @ Simulate successful write
     mov r0, #test_len
