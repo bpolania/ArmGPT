@@ -35,15 +35,15 @@ custom_prompt_len = . - custom_prompt
 continuous_msg: .ascii "Sending continuous data... (press Ctrl+C to stop)\n"
 continuous_len = . - continuous_msg
 
-@ Buffer for termios structure (36 bytes for ARM)
-.align 4
-termios_buf: .space 36
-
 @ BSS section for uninitialized data
 .bss
 serial_fd: .space 4
 input_buffer: .space 256
 counter: .space 4
+
+@ Buffer for termios structure (36 bytes for ARM)
+.align 4
+termios_buf: .space 36
 
 @ Main program entry point
 _start:
@@ -140,7 +140,7 @@ continuous_loop:
     str r5, [r4]
     
     @ Simple delay loop
-    mov r6, #1000000
+    ldr r6, =1000000
 delay_loop:
     subs r6, r6, #1
     bne delay_loop
