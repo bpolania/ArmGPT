@@ -36,8 +36,8 @@ custom_prompt_len = . - custom_prompt
 continuous_msg: .ascii "Sending continuous data... (press Ctrl+C to stop)\n"
 continuous_len = . - continuous_msg
 
-test_msg: .ascii "TEST: Reached critical section\n"
-test_len = . - test_msg
+bypass_test_msg: .ascii "TEST: Reached critical section\n"
+bypass_test_len = . - bypass_test_msg
 
 @ Log messages
 log_startup: .ascii "[STARTUP] Acorn Communication Simulator started\n"
@@ -118,8 +118,8 @@ _start:
     @ TEST: Skip serial initialization and logging
     @ Just print a simple message to see if we can get past this point
     mov r0, #STDOUT
-    ldr r1, =test_msg
-    mov r2, #test_len
+    ldr r1, =bypass_test_msg
+    mov r2, #bypass_test_len
     mov r7, #SYS_WRITE
     swi 0
     
