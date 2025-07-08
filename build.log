@@ -1,18 +1,2 @@
-Build started at: Tue  8 Jul 04:02:00 BST 2025
-src/main.s: Assembler messages:
-src/main.s:312: Error: attempt to store non-zero value in section `.bss'
-src/main.s:312: Error: attempt to store non-zero value in section `.bss'
-src/main.s:312: Error: attempt to store non-zero value in section `.bss'
-src/main.s:312: Error: attempt to store non-zero value in section `.bss'
-src/main.s:312: Error: attempt to store non-zero value in section `.bss'
-src/main.s:312: Error: attempt to store non-zero value in section `.bss'
-src/main.s:312: Error: attempt to store non-zero value in section `.bss'
-src/main.s:312: Error: attempt to store non-zero value in section `.bss'
-src/main.s:312: Error: attempt to store non-zero value in section `.bss'
-src/main.s:312: Error: attempt to store non-zero value in section `.bss'
-src/main.s:312: Error: attempt to store non-zero value in section `.bss'
-src/main.s:312: Error: attempt to store non-zero value in section `.bss'
-src/main.s:312: Error: attempt to store non-zero value in section `.bss'
-src/main.s:312: Error: attempt to store non-zero value in section `.bss'
-ld: cannot find acorn_comm.o: No such file or directory
-Build completed at: Tue  8 Jul 04:02:00 BST 2025
+Build started at: Tue  8 Jul 04:13:00 BST 2025
+Build completed at: Tue  8 Jul 04:13:00 BST 2025
