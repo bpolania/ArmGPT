@@ -43,7 +43,7 @@ bypass_test_len = . - bypass_test_msg
 log_startup: .ascii "[STARTUP] Acorn Communication Simulator started\n"
 log_startup_len = . - log_startup
 
-log_serial_init: .ascii "[SERIAL] Initializing serial port /dev/null\n"
+log_serial_init: .ascii "[SERIAL] Initializing serial port /dev/ttyS0\n"
 log_serial_init_len = . - log_serial_init
 
 log_serial_success: .ascii "[SERIAL] Serial port initialized successfully\n"
