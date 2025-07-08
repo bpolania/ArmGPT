@@ -408,10 +408,10 @@ init_error:
 
 @ Show menu function
 show_menu:
-    @ BYPASS: Comment out write_log call that's causing hang
-    @ldr r1, =log_menu
-    @mov r2, #log_menu_len
-    @bl write_log
+    @ Log menu display
+    ldr r1, =log_menu
+    mov r2, #log_menu_len
+    bl write_log
     
     mov r0, #STDOUT
     ldr r1, =menu_msg
