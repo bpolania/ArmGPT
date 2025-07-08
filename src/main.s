@@ -367,10 +367,10 @@ init_serial:
     mov r7, #SYS_WRITE
     swi 0
     
-    @ Open serial device with non-blocking flag to prevent hang
+    @ Open serial device in blocking mode for reliable writes
     ldr r0, =serial_device
     mov r1, #O_RDWR
-    orr r1, r1, #O_NONBLOCK
+    orr r1, r1, #O_NOCTTY    @ Don't make this the controlling terminal
     mov r2, #0
     mov r7, #SYS_OPEN
     swi 0
