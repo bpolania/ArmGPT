@@ -408,10 +408,16 @@ init_error:
 
 @ Show menu function
 show_menu:
-    @ BYPASS: Keep write_log disabled until we understand the hang better
-    @ldr r1, =log_menu
-    @mov r2, #log_menu_len
-    @bl write_log
+    @ ARM calling convention: preserve lr and frame pointer
+    push {lr}
+    
+    @ Log menu display with proper function call setup
+    ldr r1, =log_menu
+    mov r2, #log_menu_len
+    bl write_log
+    
+    @ Restore link register before continuing
+    pop {lr}
     
     mov r0, #STDOUT
     ldr r1, =menu_msg
