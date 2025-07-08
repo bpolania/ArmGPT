@@ -72,6 +72,44 @@ All notable changes to the ARM Assembly Cross-Platform Serial Communication Proj
 - Systematic debugging approach with sequential log tracking
 - Register corruption analysis and ARM assembly debugging techniques
 
+## [0.4.0] - 2025-07-08 - write_log Function Debugging
+
+### Critical Bug Analysis
+- **Raspberry Pi infinite menu loop** - Program showing menu continuously without exit
+- **Isolated hang location** - write_log call in show_menu function suspected
+- **Cross-platform testing validation** - Mac version works perfectly with full logging
+- **Systematic debugging approach** - Temporarily bypass specific write_log calls to isolate issue
+
+### Debug Actions Taken
+- **Enhanced Mac simulation** with complete write_log implementation and all log messages
+- **Verified Mac logging flow**: `[STARTUP] → [DEBUG] Entering main loop → [DEBUG] Showing menu → [EXIT]`
+- **Restored write_log in ARM show_menu** - caused infinite loop on Raspberry Pi
+- **Re-applied bypass testing** - disabled write_log in show_menu to test hang theory
+- **Cross-platform comparison** - Mac works, Pi hangs on same write_log call
+
+### Technical Findings
+- **write_log function logic is correct** - proven by Mac implementation success
+- **Platform-specific hang** - same code works on macOS x86_64, hangs on ARM Linux
+- **Specific function isolation** - hang occurs in show_menu write_log, not main loop write_log
+- **Register preservation working** - other write_log calls (startup, main loop) work fine
+
+### Development Strategy
+- **Test-driven debugging** - Use Mac simulation to verify fixes before Pi deployment
+- **Incremental isolation** - Disable specific write_log calls to pinpoint exact hang location
+- **Cross-platform validation** - Ensure assembly logic works on both architectures
+- **Systematic bypass testing** - Maintain program structure while isolating problematic calls
+
+### Files Modified
+- `src/main.s` - Temporarily bypassed write_log in show_menu function
+- `Makefile.mac` - Enhanced with complete logging simulation
+- `CHANGELOG.md` - This detailed debugging documentation
+
+### Next Steps
+- Test bypassed version on Raspberry Pi to confirm hang isolation
+- Investigate ARM-specific register or system call differences
+- Compare working write_log calls vs hanging write_log call
+- Develop ARM-specific fix while maintaining Mac compatibility
+
 ## [0.3.0] - 2025-07-08 - Mac Testing Support
 
 ### Added
