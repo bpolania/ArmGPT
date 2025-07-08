@@ -147,6 +147,13 @@ main_loop:
     @ Get user choice
     bl get_input
     
+    @ Log received choice for debugging
+    push {r0, r1, r2, lr}
+    ldr r1, =log_input_received
+    mov r2, #log_input_received_len
+    bl write_log
+    pop {r0, r1, r2, lr}
+    
     @ Process choice
     cmp r0, #'1'
     beq send_test
@@ -158,6 +165,13 @@ main_loop:
     beq exit_program
     
     @ Invalid choice, loop again
+    @ Log invalid choice for debugging
+    push {r0, r1, r2, lr}
+    ldr r1, =log_main_loop    @ Reuse existing log message
+    mov r2, #log_main_loop_len
+    bl write_log
+    pop {r0, r1, r2, lr}
+    
     b main_loop
 
 @ Send test message function
