@@ -147,13 +147,6 @@ main_loop:
     @ Get user choice
     bl get_input
     
-    @ Log received choice for debugging
-    push {r0, r1, r2, lr}
-    ldr r1, =log_input_received
-    mov r2, #log_input_received_len
-    bl write_log
-    pop {r0, r1, r2, lr}
-    
     @ Process choice
     cmp r0, #'1'
     beq send_test
