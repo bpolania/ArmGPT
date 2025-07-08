@@ -103,10 +103,10 @@ _start:
     @ Initialize log file first
     bl init_log
     
-    @ BYPASS: Temporarily disable startup write_log to test hang location
-    @ldr r1, =log_startup
-    @mov r2, #log_startup_len
-    @bl write_log
+    @ Test: Enable startup write_log to test timing theory
+    ldr r1, =log_startup
+    mov r2, #log_startup_len
+    bl write_log
     
     @ Print platform message
     mov r0, #STDOUT
