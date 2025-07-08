@@ -195,11 +195,27 @@ send_test:
     cmp r0, #0
     ble serial_unavailable
     
+    @ Retry loop for non-blocking writes
+    mov r3, #5    @ Retry up to 5 times
+    
+write_retry_loop:
     ldr r1, =test_msg
     mov r2, #test_len
     mov r7, #SYS_WRITE
     swi 0
     
+    @ Check if write succeeded (bytes written > 0)
+    cmp r0, #0
+    bgt write_success
+    
+    @ If failed, retry
+    subs r3, r3, #1
+    bne write_retry_loop
+    
+    @ All retries failed, treat as error
+    mov r0, #-1
+    
+write_success:
     @ Log serial write result
     push {r0, r1, r2, lr}
     ldr r1, =log_serial_result
@@ -367,9 +383,10 @@ init_serial:
     mov r7, #SYS_WRITE
     swi 0
     
-    @ Open serial device in blocking mode for reliable writes
+    @ Open serial device with non-blocking flag to prevent hang
     ldr r0, =serial_device
     mov r1, #O_RDWR
+    orr r1, r1, #O_NONBLOCK
     orr r1, r1, #O_NOCTTY    @ Don't make this the controlling terminal
     mov r2, #0
     mov r7, #SYS_OPEN
