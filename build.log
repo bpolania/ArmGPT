@@ -1,5 +1,964 @@
-Build started at: Tue  8 Jul 04:53:07 BST 2025
-src/main.s: Assembler messages:
-src/main.s:39: Error: symbol `test_msg' is already defined
-ld: cannot find acorn_comm.o: No such file or directory
-Build completed at: Tue  8 Jul 04:53:07 BST 2025
+Build started at: Mon Jul  7 20:54:35 PDT 2025
+src/main.s:1:1: error: unexpected token at start of statement
+@ ARM Assembly Cross-Platform Serial Communication Project
+^
+src/main.s:2:1: error: unexpected token at start of statement
+@ Main program file for Acorn computer communication simulation
+^
+src/main.s:3:1: error: unexpected token at start of statement
+@ Compatible with Raspberry Pi and other ARM platforms
+^
+src/main.s:8:1: error: unexpected token at start of statement
+@ Include system call definitions
+^
+Included from src/main.s:9:
+include/linux_syscalls.inc:1:1: error: unexpected token at start of statement
+@ Linux System Call Numbers for ARM Assembly
+^
+Included from src/main.s:9:
+include/linux_syscalls.inc:2:1: error: unexpected token at start of statement
+@ ARM Assembly Cross-Platform Serial Communication Project
+^
+Included from src/main.s:9:
+include/linux_syscalls.inc:4:1: error: unexpected token at start of statement
+@ File operations
+^
+Included from src/main.s:9:
+include/linux_syscalls.inc:11:1: error: unexpected token at start of statement
+@ Process control
+^
+Included from src/main.s:9:
+include/linux_syscalls.inc:16:1: error: unexpected token at start of statement
+@ Time operations
+^
+Included from src/main.s:9:
+include/linux_syscalls.inc:20:1: error: unexpected token at start of statement
+@ Memory operations
+^
+Included from src/main.s:9:
+include/linux_syscalls.inc:24:1: error: unexpected token at start of statement
+@ File descriptors
+^
+Included from src/main.s:9:
+include/linux_syscalls.inc:29:1: error: unexpected token at start of statement
+@ File access modes
+^
+Included from src/main.s:9:
+include/linux_syscalls.inc:40:1: error: unexpected token at start of statement
+@ IOCTL commands for serial port configuration
+^
+Included from src/main.s:9:
+include/linux_syscalls.inc:46:1: error: unexpected token at start of statement
+@ Termios flags
+^
+Included from src/main.s:9:
+include/linux_syscalls.inc:57:1: error: unexpected token at start of statement
+@ Baud rates
+^
+Included from src/main.s:9:
+include/linux_syscalls.inc:64:1: error: unexpected token at start of statement
+@ Character sizes
+^
+Included from src/main.s:9:
+include/linux_syscalls.inc:70:1: error: unexpected token at start of statement
+@ Error codes
+^
+src/main.s:11:1: error: unexpected token at start of statement
+@ Data section
+^
+src/main.s:42:1: error: unexpected token at start of statement
+@ Log messages
+^
+src/main.s:82:1: error: unexpected token at start of statement
+@ Timestamp format strings
+^
+src/main.s:87:1: error: unexpected token at start of statement
+@ BSS section for uninitialized data
+^
+src/main.s:98:1: error: unexpected token at start of statement
+@ Return to text section for code
+^
+src/main.s:101:1: error: unexpected token at start of statement
+@ Main program entry point
+^
+src/main.s:103:5: error: unexpected token at start of statement
+    @ Initialize log file first
+    ^
+src/main.s:106:5: error: unexpected token at start of statement
+    @ Log startup message
+    ^
+src/main.s:107:13: error: Only valid when first operand is register
+    ldr r1, =log_startup
+            ^
+src/main.s:108:9: error: invalid operand for instruction
+    mov r2, #log_startup_len
+        ^
+src/main.s:111:5: error: unexpected token at start of statement
+    @ Print platform message
+    ^
+src/main.s:112:9: error: invalid operand for instruction
+    mov r0, #STDOUT
+        ^
+src/main.s:113:13: error: Only valid when first operand is register
+    ldr r1, =platform_msg
+            ^
+src/main.s:114:9: error: invalid operand for instruction
+    mov r2, #platform_len
+        ^
+src/main.s:115:9: error: invalid operand for instruction
+    mov r7, #SYS_WRITE
+        ^
+src/main.s:116:5: error: unrecognized instruction mnemonic, did you mean: sli, sri, swp, wfi?
+    swi 0
+    ^
+src/main.s:118:5: error: unexpected token at start of statement
+    @ TEST: Skip serial initialization and logging
+    ^
+src/main.s:119:5: error: unexpected token at start of statement
+    @ Just print a simple message to see if we can get past this point
+    ^
+src/main.s:120:9: error: invalid operand for instruction
+    mov r0, #STDOUT
+        ^
+src/main.s:121:13: error: Only valid when first operand is register
+    ldr r1, =bypass_test_msg
+            ^
+src/main.s:122:9: error: invalid operand for instruction
+    mov r2, #bypass_test_len
+        ^
+src/main.s:123:9: error: invalid operand for instruction
+    mov r7, #SYS_WRITE
+        ^
+src/main.s:124:5: error: unrecognized instruction mnemonic, did you mean: sli, sri, swp, wfi?
+    swi 0
+    ^
+src/main.s:126:5: error: unexpected token at start of statement
+    @ Initialize serial port
+    ^
+src/main.s:127:5: error: unrecognized instruction mnemonic, did you mean: b, bl, blr, bsl, tbl?
+    @bl init_serial
+    ^
+src/main.s:129:5: error: unexpected token at start of statement
+    @ Log before storing file descriptor
+    ^
+src/main.s:130:14: error: unexpected token in operand
+    @ldr r1, =log_store_fd
+             ^
+src/main.s:131:5: error: unrecognized instruction mnemonic, did you mean: fmov, mov, movi, movk, movn, movz, smov, umov?
+    @mov r2, #log_store_fd_len
+    ^
+src/main.s:132:5: error: unrecognized instruction mnemonic, did you mean: b, bl, blr, bsl, tbl?
+    @bl write_log
+    ^
+src/main.s:134:5: error: unexpected token at start of statement
+    @ Store file descriptor (even if -1 for error)
+    ^
+src/main.s:135:13: error: Only valid when first operand is register
+    ldr r1, =serial_fd
+            ^
+src/main.s:136:9: error: invalid operand for instruction
+    str r0, [r1]
+        ^
+src/main.s:138:5: error: unexpected token at start of statement
+    @ Log entering main loop
+    ^
+src/main.s:139:13: error: Only valid when first operand is register
+    ldr r1, =log_main_loop
+            ^
+src/main.s:140:9: error: invalid operand for instruction
+    mov r2, #log_main_loop_len
+        ^
+src/main.s:144:5: error: unexpected token at start of statement
+    @ Show menu
+    ^
+src/main.s:147:5: error: unexpected token at start of statement
+    @ Get user choice
+    ^
+src/main.s:150:5: error: unexpected token at start of statement
+    @ Process choice
+    ^
+src/main.s:151:9: error: invalid operand for instruction
+    cmp r0, #'1'
+        ^
+src/main.s:153:9: error: invalid operand for instruction
+    cmp r0, #'2'
+        ^
+src/main.s:155:9: error: invalid operand for instruction
+    cmp r0, #'3'
+        ^
+src/main.s:157:9: error: invalid operand for instruction
+    cmp r0, #'4'
+        ^
+src/main.s:160:5: error: unexpected token at start of statement
+    @ Invalid choice, loop again
+    ^
+src/main.s:163:1: error: unexpected token at start of statement
+@ Send test message function
+^
+src/main.s:165:5: error: unexpected token at start of statement
+    @ Log action
+    ^
+src/main.s:166:13: error: Only valid when first operand is register
+    ldr r1, =log_test_msg
+            ^
+src/main.s:167:9: error: invalid operand for instruction
+    mov r2, #log_test_msg_len
+        ^
+src/main.s:170:5: error: unexpected token at start of statement
+    @ Send test message to serial port
+    ^
+src/main.s:171:13: error: Only valid when first operand is register
+    ldr r0, =serial_fd
+            ^
+src/main.s:172:9: error: invalid operand for instruction
+    ldr r0, [r0]
+        ^
+src/main.s:174:5: error: unexpected token at start of statement
+    @ Check if serial port is available
+    ^
+src/main.s:175:9: error: invalid operand for instruction
+    cmp r0, #0
+        ^
+src/main.s:178:13: error: Only valid when first operand is register
+    ldr r1, =test_msg
+            ^
+src/main.s:179:9: error: invalid operand for instruction
+    mov r2, #test_len
+        ^
+src/main.s:180:9: error: invalid operand for instruction
+    mov r7, #SYS_WRITE
+        ^
+src/main.s:181:5: error: unrecognized instruction mnemonic, did you mean: sli, sri, swp, wfi?
+    swi 0
+    ^
+src/main.s:183:5: error: unexpected token at start of statement
+    @ Check for errors
+    ^
+src/main.s:184:9: error: invalid operand for instruction
+    cmp r0, #0
+        ^
+src/main.s:190:5: error: unexpected token at start of statement
+    @ Simulate successful send when serial unavailable
+    ^
+src/main.s:191:9: error: invalid operand for instruction
+    mov r0, #test_len
+        ^
+src/main.s:195:5: error: unexpected token at start of statement
+    @ Print success message
+    ^
+src/main.s:196:9: error: invalid operand for instruction
+    mov r0, #STDOUT
+        ^
+src/main.s:197:13: error: Only valid when first operand is register
+    ldr r1, =success_msg
+            ^
+src/main.s:198:9: error: invalid operand for instruction
+    mov r2, #success_len
+        ^
+src/main.s:199:9: error: invalid operand for instruction
+    mov r7, #SYS_WRITE
+        ^
+src/main.s:200:5: error: unrecognized instruction mnemonic, did you mean: sli, sri, swp, wfi?
+    swi 0
+    ^
+src/main.s:204:1: error: unexpected token at start of statement
+@ Send continuous data function
+^
+src/main.s:206:5: error: unexpected token at start of statement
+    @ Log action
+    ^
+src/main.s:207:13: error: Only valid when first operand is register
+    ldr r1, =log_continuous
+            ^
+src/main.s:208:9: error: invalid operand for instruction
+    mov r2, #log_continuous_len
+        ^
+src/main.s:211:5: error: unexpected token at start of statement
+    @ Print continuous message
+    ^
+src/main.s:212:9: error: invalid operand for instruction
+    mov r0, #STDOUT
+        ^
+src/main.s:213:13: error: Only valid when first operand is register
+    ldr r1, =continuous_msg
+            ^
+src/main.s:214:9: error: invalid operand for instruction
+    mov r2, #continuous_len
+        ^
+src/main.s:215:9: error: invalid operand for instruction
+    mov r7, #SYS_WRITE
+        ^
+src/main.s:216:5: error: unrecognized instruction mnemonic, did you mean: sli, sri, swp, wfi?
+    swi 0
+    ^
+src/main.s:218:5: error: unexpected token at start of statement
+    @ Initialize counter
+    ^
+src/main.s:219:13: error: Only valid when first operand is register
+    ldr r4, =counter
+            ^
+src/main.s:220:9: error: invalid operand for instruction
+    mov r5, #0
+        ^
+src/main.s:221:9: error: invalid operand for instruction
+    str r5, [r4]
+        ^
+src/main.s:224:5: error: unexpected token at start of statement
+    @ Send test message
+    ^
+src/main.s:225:13: error: Only valid when first operand is register
+    ldr r0, =serial_fd
+            ^
+src/main.s:226:9: error: invalid operand for instruction
+    ldr r0, [r0]
+        ^
+src/main.s:228:5: error: unexpected token at start of statement
+    @ Check if serial port is available
+    ^
+src/main.s:229:9: error: invalid operand for instruction
+    cmp r0, #0
+        ^
+src/main.s:232:13: error: Only valid when first operand is register
+    ldr r1, =test_msg
+            ^
+src/main.s:233:9: error: invalid operand for instruction
+    mov r2, #test_len
+        ^
+src/main.s:234:9: error: invalid operand for instruction
+    mov r7, #SYS_WRITE
+        ^
+src/main.s:235:5: error: unrecognized instruction mnemonic, did you mean: sli, sri, swp, wfi?
+    swi 0
+    ^
+src/main.s:237:5: error: unexpected token at start of statement
+    @ Check for errors
+    ^
+src/main.s:238:9: error: invalid operand for instruction
+    cmp r0, #0
+        ^
+src/main.s:244:5: error: unexpected token at start of statement
+    @ Simulate successful send when serial unavailable
+    ^
+src/main.s:245:9: error: invalid operand for instruction
+    mov r0, #test_len
+        ^
+src/main.s:249:5: error: unexpected token at start of statement
+    @ Increment counter
+    ^
+src/main.s:250:13: error: Only valid when first operand is register
+    ldr r4, =counter
+            ^
+src/main.s:251:9: error: invalid operand for instruction
+    ldr r5, [r4]
+        ^
+src/main.s:252:9: error: invalid operand for instruction
+    add r5, r5, #1
+        ^
+src/main.s:253:9: error: invalid operand for instruction
+    str r5, [r4]
+        ^
+src/main.s:255:5: error: unexpected token at start of statement
+    @ Simple delay loop
+    ^
+src/main.s:256:13: error: Only valid when first operand is register
+    ldr r6, =1000000
+            ^
+src/main.s:258:10: error: invalid operand for instruction
+    subs r6, r6, #1
+         ^
+src/main.s:261:5: error: unexpected token at start of statement
+    @ Check if we should continue (simplified - just loop for now)
+    ^
+src/main.s:262:5: error: unexpected token at start of statement
+    @ In a real implementation, you'd check for interrupts or user input
+    ^
+src/main.s:263:20: error: invalid variant 'Send'
+    cmp r5, #10  @ Send 10 messages then stop
+                   ^
+src/main.s:268:1: error: unexpected token at start of statement
+@ Send custom message function
+^
+src/main.s:270:5: error: unexpected token at start of statement
+    @ Log action
+    ^
+src/main.s:271:13: error: Only valid when first operand is register
+    ldr r1, =log_custom
+            ^
+src/main.s:272:9: error: invalid operand for instruction
+    mov r2, #log_custom_len
+        ^
+src/main.s:275:5: error: unexpected token at start of statement
+    @ Print prompt
+    ^
+src/main.s:276:9: error: invalid operand for instruction
+    mov r0, #STDOUT
+        ^
+src/main.s:277:13: error: Only valid when first operand is register
+    ldr r1, =custom_prompt
+            ^
+src/main.s:278:9: error: invalid operand for instruction
+    mov r2, #custom_prompt_len
+        ^
+src/main.s:279:9: error: invalid operand for instruction
+    mov r7, #SYS_WRITE
+        ^
+src/main.s:280:5: error: unrecognized instruction mnemonic, did you mean: sli, sri, swp, wfi?
+    swi 0
+    ^
+src/main.s:282:5: error: unexpected token at start of statement
+    @ Read custom message
+    ^
+src/main.s:283:9: error: invalid operand for instruction
+    mov r0, #STDIN
+        ^
+src/main.s:284:13: error: Only valid when first operand is register
+    ldr r1, =input_buffer
+            ^
+src/main.s:285:9: error: invalid operand for instruction
+    mov r2, #255
+        ^
+src/main.s:286:9: error: invalid operand for instruction
+    mov r7, #SYS_READ
+        ^
+src/main.s:287:5: error: unrecognized instruction mnemonic, did you mean: sli, sri, swp, wfi?
+    swi 0
+    ^
+src/main.s:289:5: error: unexpected token at start of statement
+    @ Store length
+    ^
+src/main.s:290:9: error: invalid operand for instruction
+    mov r3, r0
+        ^
+src/main.s:292:5: error: unexpected token at start of statement
+    @ Send custom message to serial port
+    ^
+src/main.s:293:13: error: Only valid when first operand is register
+    ldr r0, =serial_fd
+            ^
+src/main.s:294:9: error: invalid operand for instruction
+    ldr r0, [r0]
+        ^
+src/main.s:296:5: error: unexpected token at start of statement
+    @ Check if serial port is available
+    ^
+src/main.s:297:9: error: invalid operand for instruction
+    cmp r0, #0
+        ^
+src/main.s:300:13: error: Only valid when first operand is register
+    ldr r1, =input_buffer
+            ^
+src/main.s:301:9: error: invalid operand for instruction
+    mov r2, r3
+        ^
+src/main.s:302:9: error: invalid operand for instruction
+    mov r7, #SYS_WRITE
+        ^
+src/main.s:303:5: error: unrecognized instruction mnemonic, did you mean: sli, sri, swp, wfi?
+    swi 0
+    ^
+src/main.s:305:5: error: unexpected token at start of statement
+    @ Check for errors
+    ^
+src/main.s:306:9: error: invalid operand for instruction
+    cmp r0, #0
+        ^
+src/main.s:312:5: error: unexpected token at start of statement
+    @ Simulate successful send when serial unavailable
+    ^
+src/main.s:313:9: error: invalid operand for instruction
+    mov r0, r3
+        ^
+src/main.s:317:5: error: unexpected token at start of statement
+    @ Print success message
+    ^
+src/main.s:318:9: error: invalid operand for instruction
+    mov r0, #STDOUT
+        ^
+src/main.s:319:13: error: Only valid when first operand is register
+    ldr r1, =success_msg
+            ^
+src/main.s:320:9: error: invalid operand for instruction
+    mov r2, #success_len
+        ^
+src/main.s:321:9: error: invalid operand for instruction
+    mov r7, #SYS_WRITE
+        ^
+src/main.s:322:5: error: unrecognized instruction mnemonic, did you mean: sli, sri, swp, wfi?
+    swi 0
+    ^
+src/main.s:326:1: error: unexpected token at start of statement
+@ Initialize serial port function
+^
+src/main.s:328:5: error: unexpected token at start of statement
+    @ Log serial initialization
+    ^
+src/main.s:329:13: error: Only valid when first operand is register
+    ldr r1, =log_serial_init
+            ^
+src/main.s:330:9: error: invalid operand for instruction
+    mov r2, #log_serial_init_len
+        ^
+src/main.s:333:5: error: unexpected token at start of statement
+    @ Print initialization message
+    ^
+src/main.s:334:9: error: invalid operand for instruction
+    mov r0, #STDOUT
+        ^
+src/main.s:335:13: error: Only valid when first operand is register
+    ldr r1, =serial_init_msg
+            ^
+src/main.s:336:9: error: invalid operand for instruction
+    mov r2, #serial_init_len
+        ^
+src/main.s:337:9: error: invalid operand for instruction
+    mov r7, #SYS_WRITE
+        ^
+src/main.s:338:5: error: unrecognized instruction mnemonic, did you mean: sli, sri, swp, wfi?
+    swi 0
+    ^
+src/main.s:340:5: error: unexpected token at start of statement
+    @ Open serial device
+    ^
+src/main.s:341:13: error: Only valid when first operand is register
+    ldr r0, =serial_device
+            ^
+src/main.s:342:9: error: invalid operand for instruction
+    mov r1, #O_RDWR
+        ^
+src/main.s:343:9: error: invalid operand for instruction
+    mov r2, #0
+        ^
+src/main.s:344:9: error: invalid operand for instruction
+    mov r7, #SYS_OPEN
+        ^
+src/main.s:345:5: error: unrecognized instruction mnemonic, did you mean: sli, sri, swp, wfi?
+    swi 0
+    ^
+src/main.s:347:5: error: unexpected token at start of statement
+    @ Check for error
+    ^
+src/main.s:348:9: error: invalid operand for instruction
+    cmp r0, #0
+        ^
+src/main.s:351:5: error: unexpected token at start of statement
+    @ Store file descriptor for later use
+    ^
+src/main.s:352:9: error: invalid operand for instruction
+    mov r4, r0
+        ^
+src/main.s:354:5: error: unexpected token at start of statement
+    @ Get current termios settings
+    ^
+src/main.s:355:9: error: invalid operand for instruction
+    mov r0, r4
+        ^
+src/main.s:356:9: error: invalid operand for instruction
+    mov r1, #TCGETS
+        ^
+src/main.s:357:13: error: Only valid when first operand is register
+    ldr r2, =termios_buf
+            ^
+src/main.s:358:9: error: invalid operand for instruction
+    mov r7, #SYS_IOCTL
+        ^
+src/main.s:359:5: error: unrecognized instruction mnemonic, did you mean: sli, sri, swp, wfi?
+    swi 0
+    ^
+src/main.s:361:5: error: unexpected token at start of statement
+    @ Configure serial port settings
+    ^
+src/main.s:362:5: error: unexpected token at start of statement
+    @ This is a simplified version - in practice you'd modify specific bits
+    ^
+src/main.s:363:13: error: Only valid when first operand is register
+    ldr r1, =termios_buf
+            ^
+src/main.s:365:5: error: unexpected token at start of statement
+    @ Set baud rate to 9600
+    ^
+src/main.s:366:13: error: Only valid when first operand is register
+    ldr r2, =B9600
+            ^
+src/main.s:367:25: error: unexpected token in argument list
+    str r2, [r1, #8]    @ c_cflag offset
+                        ^
+src/main.s:369:5: error: unexpected token at start of statement
+    @ Set 8N1 (8 data bits, no parity, 1 stop bit)
+    ^
+src/main.s:370:9: error: invalid operand for instruction
+    ldr r2, [r1, #8]
+        ^
+src/main.s:371:9: error: invalid operand for instruction
+    orr r2, r2, #CS8
+        ^
+src/main.s:372:9: error: invalid operand for instruction
+    str r2, [r1, #8]
+        ^
+src/main.s:374:5: error: unexpected token at start of statement
+    @ Apply settings
+    ^
+src/main.s:375:9: error: invalid operand for instruction
+    mov r0, r4
+        ^
+src/main.s:376:9: error: invalid operand for instruction
+    mov r1, #TCSETS
+        ^
+src/main.s:377:13: error: Only valid when first operand is register
+    ldr r2, =termios_buf
+            ^
+src/main.s:378:9: error: invalid operand for instruction
+    mov r7, #SYS_IOCTL
+        ^
+src/main.s:379:5: error: unrecognized instruction mnemonic, did you mean: sli, sri, swp, wfi?
+    swi 0
+    ^
+src/main.s:381:5: error: unexpected token at start of statement
+    @ Log success
+    ^
+src/main.s:382:13: error: Only valid when first operand is register
+    ldr r1, =log_serial_success
+            ^
+src/main.s:383:9: error: invalid operand for instruction
+    mov r2, #log_serial_success_len
+        ^
+src/main.s:386:5: error: unexpected token at start of statement
+    @ Return file descriptor
+    ^
+src/main.s:387:9: error: invalid operand for instruction
+    mov r0, r4
+        ^
+src/main.s:388:5: error: unrecognized instruction mnemonic, did you mean: b, bcax, bl, br, sb, tbx?
+    bx lr
+    ^
+src/main.s:391:5: error: unexpected token at start of statement
+    @ Log serial error
+    ^
+src/main.s:392:13: error: Only valid when first operand is register
+    ldr r1, =log_serial_error
+            ^
+src/main.s:393:9: error: invalid operand for instruction
+    mov r2, #log_serial_error_len
+        ^
+src/main.s:396:5: error: unexpected token at start of statement
+    @ Serial port initialization failed
+    ^
+src/main.s:397:9: error: invalid operand for instruction
+    mov r0, #STDERR
+        ^
+src/main.s:398:13: error: Only valid when first operand is register
+    ldr r1, =error_msg
+            ^
+src/main.s:399:9: error: invalid operand for instruction
+    mov r2, #error_len
+        ^
+src/main.s:400:9: error: invalid operand for instruction
+    mov r7, #SYS_WRITE
+        ^
+src/main.s:401:5: error: unrecognized instruction mnemonic, did you mean: sli, sri, swp, wfi?
+    swi 0
+    ^
+src/main.s:403:9: error: invalid operand for instruction
+    mov r0, #-1
+        ^
+src/main.s:404:5: error: unrecognized instruction mnemonic, did you mean: b, bcax, bl, br, sb, tbx?
+    bx lr
+    ^
+src/main.s:406:1: error: unexpected token at start of statement
+@ Show menu function
+^
+src/main.s:408:5: error: unexpected token at start of statement
+    @ Log menu display
+    ^
+src/main.s:409:13: error: Only valid when first operand is register
+    ldr r1, =log_menu
+            ^
+src/main.s:410:9: error: invalid operand for instruction
+    mov r2, #log_menu_len
+        ^
+src/main.s:413:9: error: invalid operand for instruction
+    mov r0, #STDOUT
+        ^
+src/main.s:414:13: error: Only valid when first operand is register
+    ldr r1, =menu_msg
+            ^
+src/main.s:415:9: error: invalid operand for instruction
+    mov r2, #menu_len
+        ^
+src/main.s:416:9: error: invalid operand for instruction
+    mov r7, #SYS_WRITE
+        ^
+src/main.s:417:5: error: unrecognized instruction mnemonic, did you mean: sli, sri, swp, wfi?
+    swi 0
+    ^
+src/main.s:418:5: error: unrecognized instruction mnemonic, did you mean: b, bcax, bl, br, sb, tbx?
+    bx lr
+    ^
+src/main.s:420:1: error: unexpected token at start of statement
+@ Get input function
+^
+src/main.s:422:5: error: unexpected token at start of statement
+    @ Log input wait
+    ^
+src/main.s:423:13: error: Only valid when first operand is register
+    ldr r1, =log_input
+            ^
+src/main.s:424:9: error: invalid operand for instruction
+    mov r2, #log_input_len
+        ^
+src/main.s:427:5: error: unexpected token at start of statement
+    @ Read single character from stdin
+    ^
+src/main.s:428:9: error: invalid operand for instruction
+    mov r0, #STDIN
+        ^
+src/main.s:429:13: error: Only valid when first operand is register
+    ldr r1, =input_buffer
+            ^
+src/main.s:430:9: error: invalid operand for instruction
+    mov r2, #1
+        ^
+src/main.s:431:9: error: invalid operand for instruction
+    mov r7, #SYS_READ
+        ^
+src/main.s:432:5: error: unrecognized instruction mnemonic, did you mean: sli, sri, swp, wfi?
+    swi 0
+    ^
+src/main.s:434:5: error: unexpected token at start of statement
+    @ Log input received
+    ^
+src/main.s:435:13: error: Only valid when first operand is register
+    ldr r1, =log_input_received
+            ^
+src/main.s:436:9: error: invalid operand for instruction
+    mov r2, #log_input_received_len
+        ^
+src/main.s:439:5: error: unexpected token at start of statement
+    @ Load the character
+    ^
+src/main.s:440:13: error: Only valid when first operand is register
+    ldr r1, =input_buffer
+            ^
+src/main.s:441:10: error: invalid operand for instruction
+    ldrb r0, [r1]
+         ^
+src/main.s:442:5: error: unrecognized instruction mnemonic, did you mean: b, bcax, bl, br, sb, tbx?
+    bx lr
+    ^
+src/main.s:444:1: error: unexpected token at start of statement
+@ Send error handler
+^
+src/main.s:446:9: error: invalid operand for instruction
+    mov r0, #STDERR
+        ^
+src/main.s:447:13: error: Only valid when first operand is register
+    ldr r1, =error_msg
+            ^
+src/main.s:448:9: error: invalid operand for instruction
+    mov r2, #error_len
+        ^
+src/main.s:449:9: error: invalid operand for instruction
+    mov r7, #SYS_WRITE
+        ^
+src/main.s:450:5: error: unrecognized instruction mnemonic, did you mean: sli, sri, swp, wfi?
+    swi 0
+    ^
+src/main.s:453:1: error: unexpected token at start of statement
+@ Clean exit function
+^
+src/main.s:455:5: error: unexpected token at start of statement
+    @ Log exit
+    ^
+src/main.s:456:13: error: Only valid when first operand is register
+    ldr r1, =log_exit
+            ^
+src/main.s:457:9: error: invalid operand for instruction
+    mov r2, #log_exit_len
+        ^
+src/main.s:460:5: error: unexpected token at start of statement
+    @ Close serial port
+    ^
+src/main.s:461:13: error: Only valid when first operand is register
+    ldr r0, =serial_fd
+            ^
+src/main.s:462:9: error: invalid operand for instruction
+    ldr r0, [r0]
+        ^
+src/main.s:463:9: error: invalid operand for instruction
+    mov r7, #SYS_CLOSE
+        ^
+src/main.s:464:5: error: unrecognized instruction mnemonic, did you mean: sli, sri, swp, wfi?
+    swi 0
+    ^
+src/main.s:466:5: error: unexpected token at start of statement
+    @ Close log file
+    ^
+src/main.s:467:13: error: Only valid when first operand is register
+    ldr r0, =log_fd
+            ^
+src/main.s:468:9: error: invalid operand for instruction
+    ldr r0, [r0]
+        ^
+src/main.s:469:9: error: invalid operand for instruction
+    mov r7, #SYS_CLOSE
+        ^
+src/main.s:470:5: error: unrecognized instruction mnemonic, did you mean: sli, sri, swp, wfi?
+    swi 0
+    ^
+src/main.s:472:5: error: unexpected token at start of statement
+    @ Exit successfully
+    ^
+src/main.s:473:9: error: invalid operand for instruction
+    mov r0, #0
+        ^
+src/main.s:474:9: error: invalid operand for instruction
+    mov r7, #SYS_EXIT
+        ^
+src/main.s:475:5: error: unrecognized instruction mnemonic, did you mean: sli, sri, swp, wfi?
+    swi 0
+    ^
+src/main.s:477:1: error: unexpected token at start of statement
+@ Error exit function
+^
+src/main.s:479:9: error: invalid operand for instruction
+    mov r0, #STDERR
+        ^
+src/main.s:480:13: error: Only valid when first operand is register
+    ldr r1, =error_msg
+            ^
+src/main.s:481:9: error: invalid operand for instruction
+    mov r2, #error_len
+        ^
+src/main.s:482:9: error: invalid operand for instruction
+    mov r7, #SYS_WRITE
+        ^
+src/main.s:483:5: error: unrecognized instruction mnemonic, did you mean: sli, sri, swp, wfi?
+    swi 0
+    ^
+src/main.s:485:9: error: invalid operand for instruction
+    mov r0, #1
+        ^
+src/main.s:486:9: error: invalid operand for instruction
+    mov r7, #SYS_EXIT
+        ^
+src/main.s:487:5: error: unrecognized instruction mnemonic, did you mean: sli, sri, swp, wfi?
+    swi 0
+    ^
+src/main.s:489:1: error: unexpected token at start of statement
+@ Initialize log file function
+^
+src/main.s:491:5: error: unexpected token at start of statement
+    @ Open log file for writing (create if doesn't exist, append if does)
+    ^
+src/main.s:492:13: error: Only valid when first operand is register
+    ldr r0, =log_file
+            ^
+src/main.s:493:9: error: invalid operand for instruction
+    mov r1, #O_WRONLY
+        ^
+src/main.s:494:9: error: invalid operand for instruction
+    orr r1, r1, #O_CREAT
+        ^
+src/main.s:495:9: error: invalid operand for instruction
+    orr r1, r1, #O_APPEND
+        ^
+src/main.s:496:23: error: invalid variant 'File'
+    mov r2, #420    @ File permissions (0644 octal = 420 decimal)
+                      ^
+src/main.s:497:9: error: invalid operand for instruction
+    mov r7, #SYS_OPEN
+        ^
+src/main.s:498:5: error: unrecognized instruction mnemonic, did you mean: sli, sri, swp, wfi?
+    swi 0
+    ^
+src/main.s:500:5: error: unexpected token at start of statement
+    @ Check for error
+    ^
+src/main.s:501:9: error: invalid operand for instruction
+    cmp r0, #0
+        ^
+src/main.s:504:5: error: unexpected token at start of statement
+    @ Store log file descriptor
+    ^
+src/main.s:505:13: error: Only valid when first operand is register
+    ldr r1, =log_fd
+            ^
+src/main.s:506:9: error: invalid operand for instruction
+    str r0, [r1]
+        ^
+src/main.s:508:5: error: unrecognized instruction mnemonic, did you mean: b, bcax, bl, br, sb, tbx?
+    bx lr
+    ^
+src/main.s:511:5: error: unexpected token at start of statement
+    @ If log file creation fails, store -1 to indicate no logging
+    ^
+src/main.s:512:13: error: Only valid when first operand is register
+    ldr r1, =log_fd
+            ^
+src/main.s:513:9: error: invalid operand for instruction
+    mov r0, #-1
+        ^
+src/main.s:514:9: error: invalid operand for instruction
+    str r0, [r1]
+        ^
+src/main.s:515:5: error: unrecognized instruction mnemonic, did you mean: b, bcax, bl, br, sb, tbx?
+    bx lr
+    ^
+src/main.s:517:1: error: unexpected token at start of statement
+@ Write to log file function (simplified)
+^
+src/main.s:518:1: error: unexpected token at start of statement
+@ Parameters: r1 = message address, r2 = message length
+^
+src/main.s:520:5: error: unexpected token at start of statement
+    @ Save ALL registers that might be modified
+    ^
+src/main.s:521:11: error: vector register expected
+    push {r0, r1, r2, r3, r4, r5, r6, r7, lr}
+          ^
+src/main.s:521:13: error: unknown token in expression
+    push {r0, r1, r2, r3, r4, r5, r6, r7, lr}
+            ^
+src/main.s:521:13: error: invalid operand
+    push {r0, r1, r2, r3, r4, r5, r6, r7, lr}
+            ^
+src/main.s:523:5: error: unexpected token at start of statement
+    @ Get log file descriptor
+    ^
+src/main.s:524:13: error: Only valid when first operand is register
+    ldr r0, =log_fd
+            ^
+src/main.s:525:9: error: invalid operand for instruction
+    ldr r0, [r0]
+        ^
+src/main.s:527:5: error: unexpected token at start of statement
+    @ Check if logging is available
+    ^
+src/main.s:528:9: error: invalid operand for instruction
+    cmp r0, #0
+        ^
+src/main.s:531:5: error: unexpected token at start of statement
+    @ Write message to log file (r0=fd, r1=buffer, r2=length already set)
+    ^
+src/main.s:532:9: error: invalid operand for instruction
+    mov r7, #SYS_WRITE
+        ^
+src/main.s:533:5: error: unrecognized instruction mnemonic, did you mean: sli, sri, swp, wfi?
+    swi 0
+    ^
+src/main.s:536:5: error: unexpected token at start of statement
+    @ Restore ALL registers
+    ^
+src/main.s:537:10: error: vector register expected
+    pop {r0, r1, r2, r3, r4, r5, r6, r7, lr}
+         ^
+src/main.s:537:12: error: unknown token in expression
+    pop {r0, r1, r2, r3, r4, r5, r6, r7, lr}
+           ^
+src/main.s:537:12: error: invalid operand
+    pop {r0, r1, r2, r3, r4, r5, r6, r7, lr}
+           ^
+src/main.s:538:5: error: unrecognized instruction mnemonic, did you mean: b, bcax, bl, br, sb, tbx?
+    bx lr
+    ^
+ld: file cannot be open()ed, errno=2 path=acorn_comm.o
+Build completed at: Mon Jul  7 20:54:35 PDT 2025
