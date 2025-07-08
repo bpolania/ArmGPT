@@ -135,10 +135,10 @@ _start:
     ldr r1, =serial_fd
     str r0, [r1]
     
-    @ BYPASS: Temporarily disable main loop write_log to test hang location
-    @ldr r1, =log_main_loop
-    @mov r2, #log_main_loop_len
-    @bl write_log
+    @ Test: Enable main loop write_log to test function context theory
+    ldr r1, =log_main_loop
+    mov r2, #log_main_loop_len
+    bl write_log
     
 main_loop:
     @ Show menu
