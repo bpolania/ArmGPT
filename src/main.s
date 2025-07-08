@@ -40,7 +40,7 @@ continuous_len = . - continuous_msg
 log_startup: .ascii "[STARTUP] Acorn Communication Simulator started\n"
 log_startup_len = . - log_startup
 
-log_serial_init: .ascii "[SERIAL] Initializing serial port /dev/ttyS0\n"
+log_serial_init: .ascii "[SERIAL] Initializing serial port /dev/null\n"
 log_serial_init_len = . - log_serial_init
 
 log_serial_success: .ascii "[SERIAL] Serial port initialized successfully\n"
@@ -70,6 +70,14 @@ log_input_len = . - log_input
 log_input_received: .ascii "[DEBUG] User input received\n"
 log_input_received_len = . - log_input_received
 
+log_main_loop: .ascii "[DEBUG] Entering main loop\n"
+log_main_loop_len = . - log_main_loop
+
+@ Timestamp format strings
+timestamp_prefix: .ascii "["
+bracket_close: .ascii "] "
+newline: .ascii "\n"
+
 @ BSS section for uninitialized data
 .bss
 serial_fd: .space 4
@@ -77,6 +85,9 @@ log_fd: .space 4
 input_buffer: .space 256
 counter: .space 4
 termios_buf: .space 36
+timestamp_buffer: .space 32
+log_line_buffer: .space 512
+log_counter: .space 4
 
 @ Return to text section for code
 .text
@@ -104,6 +115,11 @@ _start:
     @ Store file descriptor (even if -1 for error)
     ldr r1, =serial_fd
     str r0, [r1]
+    
+    @ Log entering main loop
+    ldr r1, =log_main_loop
+    mov r2, #log_main_loop_len
+    bl write_log
     
 main_loop:
     @ Show menu
@@ -479,11 +495,11 @@ log_error:
     str r0, [r1]
     bx lr
 
-@ Write to log file function
+@ Write to log file function with timestamp
 @ Parameters: r1 = message address, r2 = message length
 write_log:
     @ Save registers
-    push {r0, r3, r4, lr}
+    push {r0, r1, r2, r3, r4, r5, r6, lr}
     
     @ Get log file descriptor
     ldr r0, =log_fd
@@ -493,11 +509,119 @@ write_log:
     cmp r0, #0
     ble write_log_exit
     
-    @ Write message to log file
+    @ Save log fd and message info
+    mov r4, r0  @ log fd
+    mov r5, r1  @ message address
+    mov r6, r2  @ message length
+    
+    @ Increment and get log counter for timestamp
+    ldr r0, =log_counter
+    ldr r1, [r0]
+    add r1, r1, #1
+    str r1, [r0]
+    
+    @ Convert counter to string in timestamp_buffer
+    ldr r0, =timestamp_buffer
+    bl number_to_string
+    
+    @ Build log line: [counter] message
+    ldr r0, =log_line_buffer
+    
+    @ Copy "[" 
+    mov r1, #'['
+    strb r1, [r0], #1
+    
+    @ Copy counter string
+    ldr r1, =timestamp_buffer
+copy_counter:
+    ldrb r2, [r1], #1
+    cmp r2, #0
+    beq counter_done
+    strb r2, [r0], #1
+    b copy_counter
+    
+counter_done:
+    @ Copy "] "
+    mov r1, #']'
+    strb r1, [r0], #1
+    mov r1, #' '
+    strb r1, [r0], #1
+    
+    @ Copy original message
+    mov r1, r5  @ message address
+    mov r2, r6  @ message length
+copy_message:
+    cmp r2, #0
+    beq message_done
+    ldrb r3, [r1], #1
+    strb r3, [r0], #1
+    subs r2, r2, #1
+    b copy_message
+    
+message_done:
+    @ Calculate total length
+    ldr r1, =log_line_buffer
+    sub r2, r0, r1
+    
+    @ Write timestamped message to log file
+    mov r0, r4  @ log fd
     mov r7, #SYS_WRITE
     swi 0
     
 write_log_exit:
     @ Restore registers
-    pop {r0, r3, r4, lr}
+    pop {r0, r1, r2, r3, r4, r5, r6, lr}
+    bx lr
+
+@ Convert number to string
+@ Parameters: r0 = buffer address, r1 = number
+@ Returns: null-terminated string in buffer
+number_to_string:
+    push {r2, r3, r4, lr}
+    
+    @ Handle zero case
+    cmp r1, #0
+    bne convert_loop_start
+    mov r2, #'0'
+    strb r2, [r0], #1
+    mov r2, #0
+    strb r2, [r0]
+    pop {r2, r3, r4, lr}
+    bx lr
+    
+convert_loop_start:
+    mov r2, r0  @ save buffer start
+    add r0, r0, #10  @ move to end of buffer space
+    mov r3, #0  @ null terminator
+    strb r3, [r0]
+    
+convert_loop:
+    cmp r1, #0
+    beq convert_reverse
+    
+    @ Get last digit
+    mov r3, #10
+    udiv r4, r1, r3
+    mul r3, r4, r3
+    sub r3, r1, r3  @ r3 = r1 % 10
+    add r3, r3, #'0'
+    
+    @ Store digit
+    sub r0, r0, #1
+    strb r3, [r0]
+    
+    @ Continue with quotient
+    mov r1, r4
+    b convert_loop
+    
+convert_reverse:
+    @ Copy string to start of buffer
+    mov r1, r2  @ destination
+copy_digits:
+    ldrb r3, [r0], #1
+    strb r3, [r1], #1
+    cmp r3, #0
+    bne copy_digits
+    
+    pop {r2, r3, r4, lr}
     bx lr
