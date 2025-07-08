@@ -72,6 +72,85 @@ All notable changes to the ARM Assembly Cross-Platform Serial Communication Proj
 - Systematic debugging approach with sequential log tracking
 - Register corruption analysis and ARM assembly debugging techniques
 
+## [0.7.0] - 2025-07-08 - Serial Port Implementation and Device Discovery
+
+### 🔌 Real Serial Communication Implementation
+
+#### Major Achievement
+- **Real serial port initialization** replacing /dev/null fallback simulation
+- **Serial device discovery** and compatibility testing across Raspberry Pi models
+- **Comprehensive device detection** tooling for hardware troubleshooting
+- **ARM calling convention compliance** extended to all serial functions
+
+#### Serial Port Features Implemented
+- **Hardware UART configuration** with 9600 baud, 8N1 settings using ioctl
+- **Serial device opening** with proper O_RDWR flags and error handling
+- **Termios configuration** for baud rate and communication parameters
+- **Device fallback strategy** testing multiple common Pi serial devices
+- **Permission and accessibility checking** for serial device troubleshooting
+
+#### Serial Device Compatibility
+- **Tested devices**: /dev/ttyS0, /dev/ttyAMA0, /dev/serial0
+- **Device detection script** for automated hardware discovery
+- **Permission validation** and dialout group membership checking
+- **UART enablement guidance** for Raspberry Pi configuration
+
+#### ARM Assembly Improvements
+- **init_serial function** - proper lr preservation for nested function calls
+- **init_error function** - ARM calling convention compliance
+- **Serial initialization logging** with accurate device path reporting
+- **Error handling** for serial port failures with graceful fallback
+
+#### Device Discovery Tooling
+- **check-serial-devices.sh** - comprehensive serial device detection script
+- **Automated device enumeration** (/dev/ttyS*, /dev/ttyAMA*, /dev/serial*, /dev/ttyUSB*)
+- **Accessibility testing** for read/write permissions
+- **Configuration recommendations** for UART enablement and permissions
+- **Log file output** (serial_devices.log) for remote analysis
+
+#### Serial Communication Flow
+```
+[STARTUP] → [SERIAL] Initializing serial port /dev/ttyAMA0 → 
+[SERIAL] Serial port initialized successfully OR [ERROR] Serial port initialization failed →
+[DEBUG] Entering main loop → [ACTION] Sending test message → (serial output)
+```
+
+#### Technical Implementation Details
+- **Real hardware communication** replacing simulation mode
+- **ioctl-based configuration** using TCGETS/TCSETS for termios manipulation
+- **Proper file descriptor management** with error checking and cleanup
+- **Cross-platform testing** maintaining Mac simulation compatibility
+
+#### Debugging and Diagnostics
+- **Serial initialization logging** with device-specific messages
+- **Error classification** distinguishing device vs permission vs configuration issues
+- **Hardware discovery** automated detection of available serial interfaces
+- **Permission diagnostics** checking dialout group membership and device access
+
+### Files Added
+- `check-serial-devices.sh` - Serial device detection and diagnostic script
+
+### Files Modified
+- `src/main.s` - Real serial port implementation, device path updates, ARM calling conventions
+- `CHANGELOG.md` - Comprehensive documentation of serial implementation
+
+### Hardware Requirements
+- **Raspberry Pi** with UART enabled (raspi-config → Interface Options → Serial)
+- **Serial device access** (user in dialout group or sudo privileges)
+- **Available serial port** (/dev/ttyAMA0, /dev/serial0, or USB-serial adapter)
+
+### Testing and Validation
+- **Mac simulation** continues to work with simulated serial behavior
+- **Raspberry Pi** real hardware testing with actual serial device initialization
+- **Error handling** validated for missing devices and permission issues
+- **Device discovery** script tested across Pi configurations
+
+### Next Phase Ready
+- **Serial communication validation** with external monitoring tools
+- **Message transmission testing** over actual hardware
+- **Advanced features** (continuous transmission, custom messages)
+- **Hardware loopback testing** for full communication validation
+
 ## [0.6.0] - 2025-07-08 - Interactive Menu System Complete
 
 ### 🎯 Interactive Menu Framework Fully Functional
