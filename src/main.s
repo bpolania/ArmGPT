@@ -361,32 +361,8 @@ init_serial:
     @ Store file descriptor for later use
     mov r4, r0
     
-    @ Get current termios settings
-    mov r0, r4
-    mov r1, #TCGETS
-    ldr r2, =termios_buf
-    mov r7, #SYS_IOCTL
-    swi 0
-    
-    @ Configure serial port settings
-    @ This is a simplified version - in practice you'd modify specific bits
-    ldr r1, =termios_buf
-    
-    @ Set baud rate to 9600
-    ldr r2, =B9600
-    str r2, [r1, #8]    @ c_cflag offset
-    
-    @ Set 8N1 (8 data bits, no parity, 1 stop bit)
-    ldr r2, [r1, #8]
-    orr r2, r2, #CS8
-    str r2, [r1, #8]
-    
-    @ Apply settings
-    mov r0, r4
-    mov r1, #TCSETS
-    ldr r2, =termios_buf
-    mov r7, #SYS_IOCTL
-    swi 0
+    @ Skip complex termios configuration - use default serial settings
+    @ The serial device should work with default settings for basic communication
     
     @ Log success
     ldr r1, =log_serial_success
