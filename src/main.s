@@ -61,6 +61,15 @@ log_custom_len = . - log_custom
 log_exit: .ascii "[EXIT] Program terminated normally\n"
 log_exit_len = . - log_exit
 
+log_menu: .ascii "[DEBUG] Showing menu\n"
+log_menu_len = . - log_menu
+
+log_input: .ascii "[DEBUG] Waiting for user input\n"
+log_input_len = . - log_input
+
+log_input_received: .ascii "[DEBUG] User input received\n"
+log_input_received_len = . - log_input_received
+
 @ BSS section for uninitialized data
 .bss
 serial_fd: .space 4
@@ -361,6 +370,11 @@ init_error:
 
 @ Show menu function
 show_menu:
+    @ Log menu display
+    ldr r1, =log_menu
+    mov r2, #log_menu_len
+    bl write_log
+    
     mov r0, #STDOUT
     ldr r1, =menu_msg
     mov r2, #menu_len
@@ -370,12 +384,22 @@ show_menu:
 
 @ Get input function
 get_input:
+    @ Log input wait
+    ldr r1, =log_input
+    mov r2, #log_input_len
+    bl write_log
+    
     @ Read single character from stdin
     mov r0, #STDIN
     ldr r1, =input_buffer
     mov r2, #1
     mov r7, #SYS_READ
     swi 0
+    
+    @ Log input received
+    ldr r1, =log_input_received
+    mov r2, #log_input_received_len
+    bl write_log
     
     @ Load the character
     ldr r1, =input_buffer

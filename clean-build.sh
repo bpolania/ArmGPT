@@ -1,8 +1,8 @@
 #!/bin/bash
 
 # Clean build script - remove logs, clean, and rebuild with logging
-echo "🗑️  Removing old build log..."
-rm -f build.log
+echo "🗑️  Removing old logs..."
+rm -f build.log acorn_comm.log
 
 echo "🧹 Cleaning build artifacts..."
 make clean
