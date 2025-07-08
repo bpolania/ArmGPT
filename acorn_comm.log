@@ -1,3 +1,6 @@
 [STARTUP] Acorn Communication Simulator started
 [SERIAL] Initializing serial port /dev/ttyS0
 [ERROR] Serial port initialization failed
+[STARTUP] Acorn Communication Simulator started
+[SERIAL] Initializing serial port /dev/ttyS0
+[SERIAL] Serial port initialized successfully
