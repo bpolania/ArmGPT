@@ -2,7 +2,12 @@
 
 All notable changes to the ARM Assembly Cross-Platform Serial Communication Project will be documented in this file.
 
-## [Unreleased]
+## [Unreleased] - feature/hardware-serial-testing branch
+
+### Development Branch
+- **Switched to feature branch** `feature/hardware-serial-testing` for serial communication implementation
+- **Serial port initialization confirmed working** on Raspberry Pi with `/dev/serial0`
+- **Ready for hardware testing phase** with actual serial message transmission
 
 ### Added
 - Complete ARM assembly program for Acorn computer simulation
