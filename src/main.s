@@ -28,7 +28,7 @@ error_len = . - error_msg
 serial_init_msg: .ascii "Initializing serial port...\n"
 serial_init_len = . - serial_init_msg
 
-serial_device: .ascii "/dev/null\0"
+serial_device: .ascii "/dev/ttyS0\0"
 log_file: .ascii "acorn_comm.log\0"
 custom_prompt: .ascii "Enter custom message (max 255 chars): "
 custom_prompt_len = . - custom_prompt
@@ -332,6 +332,9 @@ custom_success:
 
 @ Initialize serial port function
 init_serial:
+    @ ARM calling convention: preserve lr for nested function calls
+    push {lr}
+    
     @ Log serial initialization
     ldr r1, =log_serial_init
     mov r2, #log_serial_init_len
@@ -392,6 +395,9 @@ init_serial:
     
     @ Return file descriptor
     mov r0, r4
+    
+    @ Restore link register and return
+    pop {lr}
     bx lr
 
 init_error:
@@ -408,6 +414,9 @@ init_error:
     swi 0
     
     mov r0, #-1
+    
+    @ Restore link register and return
+    pop {lr}
     bx lr
 
 @ Show menu function
