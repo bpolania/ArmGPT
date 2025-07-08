@@ -29,15 +29,42 @@ serial_init_msg: .ascii "Initializing serial port...\n"
 serial_init_len = . - serial_init_msg
 
 serial_device: .ascii "/dev/ttyS0\0"
+log_file: .ascii "acorn_comm.log\0"
 custom_prompt: .ascii "Enter custom message (max 255 chars): "
 custom_prompt_len = . - custom_prompt
 
 continuous_msg: .ascii "Sending continuous data... (press Ctrl+C to stop)\n"
 continuous_len = . - continuous_msg
 
+@ Log messages
+log_startup: .ascii "[STARTUP] Acorn Communication Simulator started\n"
+log_startup_len = . - log_startup
+
+log_serial_init: .ascii "[SERIAL] Initializing serial port /dev/ttyS0\n"
+log_serial_init_len = . - log_serial_init
+
+log_serial_success: .ascii "[SERIAL] Serial port initialized successfully\n"
+log_serial_success_len = . - log_serial_success
+
+log_serial_error: .ascii "[ERROR] Serial port initialization failed\n"
+log_serial_error_len = . - log_serial_error
+
+log_test_msg: .ascii "[ACTION] Sending test message\n"
+log_test_msg_len = . - log_test_msg
+
+log_continuous: .ascii "[ACTION] Starting continuous data transmission\n"
+log_continuous_len = . - log_continuous
+
+log_custom: .ascii "[ACTION] Sending custom message\n"
+log_custom_len = . - log_custom
+
+log_exit: .ascii "[EXIT] Program terminated normally\n"
+log_exit_len = . - log_exit
+
 @ BSS section for uninitialized data
 .bss
 serial_fd: .space 4
+log_fd: .space 4
 input_buffer: .space 256
 counter: .space 4
 termios_buf: .space 36
@@ -47,6 +74,14 @@ termios_buf: .space 36
 
 @ Main program entry point
 _start:
+    @ Initialize log file first
+    bl init_log
+    
+    @ Log startup message
+    ldr r1, =log_startup
+    mov r2, #log_startup_len
+    bl write_log
+    
     @ Print platform message
     mov r0, #STDOUT
     ldr r1, =platform_msg
@@ -85,6 +120,11 @@ main_loop:
 
 @ Send test message function
 send_test:
+    @ Log action
+    ldr r1, =log_test_msg
+    mov r2, #log_test_msg_len
+    bl write_log
+    
     @ Send test message to serial port
     ldr r0, =serial_fd
     ldr r0, [r0]
@@ -108,6 +148,11 @@ send_test:
 
 @ Send continuous data function
 send_continuous:
+    @ Log action
+    ldr r1, =log_continuous
+    mov r2, #log_continuous_len
+    bl write_log
+    
     @ Print continuous message
     mov r0, #STDOUT
     ldr r1, =continuous_msg
@@ -154,6 +199,11 @@ delay_loop:
 
 @ Send custom message function
 send_custom:
+    @ Log action
+    ldr r1, =log_custom
+    mov r2, #log_custom_len
+    bl write_log
+    
     @ Print prompt
     mov r0, #STDOUT
     ldr r1, =custom_prompt
@@ -194,6 +244,11 @@ send_custom:
 
 @ Initialize serial port function
 init_serial:
+    @ Log serial initialization
+    ldr r1, =log_serial_init
+    mov r2, #log_serial_init_len
+    bl write_log
+    
     @ Print initialization message
     mov r0, #STDOUT
     ldr r1, =serial_init_msg
@@ -242,11 +297,21 @@ init_serial:
     mov r7, #SYS_IOCTL
     swi 0
     
+    @ Log success
+    ldr r1, =log_serial_success
+    mov r2, #log_serial_success_len
+    bl write_log
+    
     @ Return file descriptor
     mov r0, r4
     bx lr
 
 init_error:
+    @ Log serial error
+    ldr r1, =log_serial_error
+    mov r2, #log_serial_error_len
+    bl write_log
+    
     @ Serial port initialization failed
     mov r0, #STDERR
     ldr r1, =error_msg
@@ -291,8 +356,19 @@ send_error:
 
 @ Clean exit function
 exit_program:
+    @ Log exit
+    ldr r1, =log_exit
+    mov r2, #log_exit_len
+    bl write_log
+    
     @ Close serial port
     ldr r0, =serial_fd
+    ldr r0, [r0]
+    mov r7, #SYS_CLOSE
+    swi 0
+    
+    @ Close log file
+    ldr r0, =log_fd
     ldr r0, [r0]
     mov r7, #SYS_CLOSE
     swi 0
@@ -313,3 +389,38 @@ exit_error:
     mov r0, #1
     mov r7, #SYS_EXIT
     swi 0
+
+@ Initialize log file function
+init_log:
+    @ Open log file for writing (create if doesn't exist, append if does)
+    ldr r0, =log_file
+    mov r1, #O_WRONLY
+    orr r1, r1, #O_CREAT
+    orr r1, r1, #O_APPEND
+    mov r2, #0644    @ File permissions
+    mov r7, #SYS_OPEN
+    swi 0
+    
+    @ Store log file descriptor
+    ldr r1, =log_fd
+    str r0, [r1]
+    
+    bx lr
+
+@ Write to log file function
+@ Parameters: r1 = message address, r2 = message length
+write_log:
+    @ Save registers
+    push {r0, r3, r4, lr}
+    
+    @ Get log file descriptor
+    ldr r0, =log_fd
+    ldr r0, [r0]
+    
+    @ Write message to log file
+    mov r7, #SYS_WRITE
+    swi 0
+    
+    @ Restore registers
+    pop {r0, r3, r4, lr}
+    bx lr
