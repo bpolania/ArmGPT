@@ -208,6 +208,14 @@ send_test:
     mov r7, #SYS_WRITE
     swi 0
     
+    @ Force flush the serial output buffer after write
+    push {r0, r1, r2, lr}
+    ldr r0, =serial_fd
+    ldr r0, [r0]
+    mov r7, #SYS_FSYNC    @ Force flush to device
+    swi 0
+    pop {r0, r1, r2, lr}
+    
     @ Check if write succeeded (bytes written > 0)
     cmp r0, #0
     bgt write_success

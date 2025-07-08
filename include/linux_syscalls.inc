@@ -6,6 +6,7 @@
 .equ SYS_WRITE,     4
 .equ SYS_OPEN,      5
 .equ SYS_CLOSE,     6
+.equ SYS_FSYNC,     118
 .equ SYS_IOCTL,     54
 
 @ Process control
