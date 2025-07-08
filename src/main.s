@@ -28,7 +28,7 @@ error_len = . - error_msg
 serial_init_msg: .ascii "Initializing serial port...\n"
 serial_init_len = . - serial_init_msg
 
-serial_device: .ascii "/dev/ttyS0\0"
+serial_device: .ascii "/dev/ttyAMA0\0"
 log_file: .ascii "acorn_comm.log\0"
 custom_prompt: .ascii "Enter custom message (max 255 chars): "
 custom_prompt_len = . - custom_prompt
@@ -43,7 +43,7 @@ bypass_test_len = . - bypass_test_msg
 log_startup: .ascii "[STARTUP] Acorn Communication Simulator started\n"
 log_startup_len = . - log_startup
 
-log_serial_init: .ascii "[SERIAL] Initializing serial port /dev/ttyS0\n"
+log_serial_init: .ascii "[SERIAL] Initializing serial port /dev/ttyAMA0\n"
 log_serial_init_len = . - log_serial_init
 
 log_serial_success: .ascii "[SERIAL] Serial port initialized successfully\n"
