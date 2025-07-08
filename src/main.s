@@ -408,10 +408,10 @@ init_error:
 
 @ Show menu function
 show_menu:
-    @ Log menu display
-    ldr r1, =log_menu
-    mov r2, #log_menu_len
-    bl write_log
+    @ BYPASS: Temporarily disable write_log to test hang theory
+    @ldr r1, =log_menu
+    @mov r2, #log_menu_len
+    @bl write_log
     
     mov r0, #STDOUT
     ldr r1, =menu_msg
