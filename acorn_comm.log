@@ -11,8 +11,4 @@
 [DEBUG] Showing menu
 [DEBUG] Waiting for user input
 [DEBUG] User input received
-[ACTION] Sending test message
-[DEBUG] Serial write attempted
-[DEBUG] Serial write result: 
-[DEBUG] Showing menu
-[DEBUG] Waiting for user input
+[EXIT] Program terminated normally
