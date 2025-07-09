@@ -2,20 +2,15 @@
 Receiving from: /dev/ttyUSB0
 Baud Rate: 9600
 Log File: receiver_monitor.log
-Started: Wed  9 Jul 18:27:28 BST 2025
+Started: Wed  9 Jul 18:49:58 BST 2025
 Waiting for data from SENDER PI...
 Press Ctrl+C to stop monitoring
 ========================================
-[0;34m[18:27:30][0m Waiting for data from SENDER PI... (Messages received: 0)
-[0;34m[18:27:40][0m Waiting for data from SENDER PI... (Messages received: 0)
-[0;34m[18:27:50][0m Waiting for data from SENDER PI... (Messages received: 0)
-[0;34m[18:28:00][0m Waiting for data from SENDER PI... (Messages received: 0)
-[0;34m[18:28:10][0m Waiting for data from SENDER PI... (Messages received: 0)
-[0;34m[18:28:20][0m Waiting for data from SENDER PI... (Messages received: 0)
-[0;34m[18:28:30][0m Waiting for data from SENDER PI... (Messages received: 0)
-[0;34m[18:28:40][0m Waiting for data from SENDER PI... (Messages received: 0)
-[0;34m[18:28:50][0m Waiting for data from SENDER PI... (Messages received: 0)
-[0;34m[18:29:00][0m Waiting for data from SENDER PI... (Messages received: 0)
-[0;34m[18:29:10][0m Waiting for data from SENDER PI... (Messages received: 0)
-[0;34m[18:29:20][0m Waiting for data from SENDER PI... (Messages received: 0)
-[1;33mMonitoring stopped at Wed  9 Jul 18:29:28 BST 2025[0m
+[0;34m[18:50:00][0m Waiting for data from SENDER PI... (Messages received: 0)
+[0;34m[18:50:10][0m Waiting for data from SENDER PI... (Messages received: 0)
+[0;34m[18:50:20][0m Waiting for data from SENDER PI... (Messages received: 0)
+[0;34m[18:50:30][0m Waiting for data from SENDER PI... (Messages received: 0)
+[0;34m[18:50:40][0m Waiting for data from SENDER PI... (Messages received: 0)
+[0;34m[18:50:50][0m Waiting for data from SENDER PI... (Messages received: 0)
+[0;34m[18:51:00][0m Waiting for data from SENDER PI... (Messages received: 0)
+[1;33mMonitoring stopped at Wed  9 Jul 18:51:07 BST 2025[0m
