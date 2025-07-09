@@ -28,7 +28,7 @@ error_len = . - error_msg
 serial_init_msg: .ascii "Initializing serial port...\n"
 serial_init_len = . - serial_init_msg
 
-serial_device: .ascii "/dev/serial0\0"
+serial_device: .ascii "/dev/ttyUSB0\0"
 dev_null_path: .ascii "/dev/null\0"
 log_file: .ascii "acorn_comm.log\0"
 custom_prompt: .ascii "Enter custom message (max 255 chars): "
@@ -96,6 +96,9 @@ log_fallback_success_len = . - log_fallback_success
 timestamp_prefix: .ascii "["
 bracket_close: .ascii "] "
 newline: .ascii "\n"
+
+@ Single character for minimal write test
+single_char: .ascii "X"
 
 @ BSS section for uninitialized data
 .bss
@@ -202,17 +205,33 @@ send_test:
     cmp r0, #0
     ble serial_unavailable
     
-    @ Try direct write first, then fallback to /dev/null for testing
+    @ Try direct write first with detailed debugging
     ldr r1, =test_msg
     mov r2, #test_len
     mov r7, #SYS_WRITE
     swi 0
+    
+    @ Store write result for debugging
+    mov r5, r0
     
     @ Force flush the serial output buffer after write
     push {r0, r1, r2, lr}
     ldr r0, =serial_fd
     ldr r0, [r0]
     mov r7, #SYS_FSYNC    @ Force flush to device
+    swi 0
+    pop {r0, r1, r2, lr}
+    
+    @ Restore write result
+    mov r0, r5
+    
+    @ Also try writing a single character to test minimal write
+    push {r0, r1, r2, lr}
+    ldr r0, =serial_fd
+    ldr r0, [r0]
+    ldr r1, =single_char
+    mov r2, #1
+    mov r7, #SYS_WRITE
     swi 0
     pop {r0, r1, r2, lr}
     
