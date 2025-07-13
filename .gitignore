@@ -4,6 +4,8 @@
 *.out
 acorn_comm
 main_mac_x64
+acorn_comm_mac_x64
+acorn_comm_mac_x64.o
 
 # Log files
 *.log
