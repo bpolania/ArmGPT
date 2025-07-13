@@ -1,14 +1,27 @@
 # Claude Instructions for ArmGPT Project
 
-## Git Commit Guidelines
+## STRICT NO ATTRIBUTION POLICY
+
+**ABSOLUTE REQUIREMENT**: Claude must NEVER include any attribution, co-authorship, or reference to AI assistance in ANY file, commit, or contribution to this repository.
+
+### Git Commit Guidelines
 
 When creating git commits for this project:
 
-- **DO NOT** include "🤖 Generated with [Claude Code](https://claude.ai/code)" or similar attribution text
-- **DO NOT** include "Co-Authored-By: Claude <noreply@anthropic.com>" or similar co-authorship attributions
+- **NEVER** include "🤖 Generated with [Claude Code](https://claude.ai/code)" or ANY attribution text
+- **NEVER** include "Co-Authored-By: Claude <noreply@anthropic.com>" or ANY co-authorship attributions
+- **NEVER** mention AI assistance, Claude, or automated generation in commit messages
+- **NEVER** add attribution comments or headers to source files
 - Keep commit messages clean and focused on the technical changes
 - Use conventional commit format when appropriate
 - Focus on the "why" rather than the "what" in commit messages
+
+### File Modification Guidelines
+
+- **NEVER** add attribution comments to source files
+- **NEVER** include AI-generated disclaimers in documentation
+- **NEVER** reference Claude or AI assistance in README files
+- **NEVER** add metadata indicating AI involvement
 
 ## Project Context
 
