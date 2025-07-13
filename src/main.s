@@ -392,15 +392,48 @@ send_custom:
     mov r7, #SYS_WRITE
     swi 0
     
-    @ Read custom message
+    @ Read custom message character by character to avoid buffering issues
+    ldr r4, =input_buffer    @ Buffer pointer
+    mov r5, #0               @ Character count
+    
+read_custom_loop:
+    @ Read one character
     mov r0, #STDIN
-    ldr r1, =input_buffer
-    mov r2, #255
+    mov r1, r4              @ Current buffer position
+    mov r2, #1              @ Read 1 character
     mov r7, #SYS_READ
     swi 0
     
+    @ Check if read failed
+    cmp r0, #0
+    ble read_custom_done
+    
+    @ Get the character
+    ldrb r6, [r4]
+    
+    @ Check for newline (end of input)
+    cmp r6, #10
+    beq read_custom_done
+    
+    @ Check for carriage return (also end of input)
+    cmp r6, #13
+    beq read_custom_done
+    
+    @ Increment buffer pointer and count
+    add r4, r4, #1
+    add r5, r5, #1
+    
+    @ Check if we've reached buffer limit (leave space for null terminator)
+    cmp r5, #254
+    blt read_custom_loop
+    
+read_custom_done:
     @ Store length
-    mov r3, r0
+    mov r3, r5
+    
+    @ Check if we have any content
+    cmp r3, #0
+    ble custom_empty_input
     
     @ Send custom message to serial port
     ldr r0, =serial_fd
@@ -415,18 +448,34 @@ send_custom:
     mov r7, #SYS_WRITE
     swi 0
     
+    @ Force flush the serial output buffer
+    push {r0, r1, r2, lr}
+    ldr r0, =serial_fd
+    ldr r0, [r0]
+    mov r7, #SYS_FSYNC
+    swi 0
+    pop {r0, r1, r2, lr}
+    
     @ Check for errors
     cmp r0, #0
     blt send_error
     
     b custom_success
 
+custom_empty_input:
+    @ Handle empty input - show error and return to menu
+    mov r0, #STDOUT
+    ldr r1, =error_msg
+    mov r2, #error_len
+    mov r7, #SYS_WRITE
+    swi 0
+    b main_loop
+
 custom_serial_unavailable:
     @ Simulate successful send when serial unavailable
     mov r0, r3
 
 custom_success:
-    
     @ Print success message
     mov r0, #STDOUT
     ldr r1, =success_msg
