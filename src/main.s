@@ -397,13 +397,29 @@ send_custom:
     mov r7, #SYS_FSYNC
     swi 0
     
-    @ Read custom message line - simple approach like working Mac version
+    @ Read line and handle leftover newline from menu selection
     mov r0, #STDIN
     ldr r1, =input_buffer
     mov r2, #255
     mov r7, #SYS_READ
     swi 0
     
+    @ If we got just a newline (length 1), read again for actual input
+    cmp r0, #1
+    bne process_input
+    ldr r1, =input_buffer
+    ldrb r2, [r1]
+    cmp r2, #10    @ newline
+    bne process_input
+    
+    @ That was just the leftover newline, read the actual custom message
+    mov r0, #STDIN
+    ldr r1, =input_buffer
+    mov r2, #255
+    mov r7, #SYS_READ
+    swi 0
+
+process_input:
     @ Check if read was successful
     cmp r0, #0
     ble custom_empty_input
