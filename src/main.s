@@ -397,29 +397,12 @@ send_custom:
     mov r7, #SYS_FSYNC
     swi 0
     
-    @ Read line and handle leftover newline from menu selection
+    @ Read custom message line (no leftover newline since get_input consumed it)
     mov r0, #STDIN
     ldr r1, =input_buffer
     mov r2, #255
     mov r7, #SYS_READ
     swi 0
-    
-    @ If we got just a newline (length 1), read again for actual input
-    cmp r0, #1
-    bne process_input
-    ldr r1, =input_buffer
-    ldrb r2, [r1]
-    cmp r2, #10    @ newline
-    bne process_input
-    
-    @ That was just the leftover newline, read the actual custom message
-    mov r0, #STDIN
-    ldr r1, =input_buffer
-    mov r2, #255
-    mov r7, #SYS_READ
-    swi 0
-
-process_input:
     @ Check if read was successful
     cmp r0, #0
     ble custom_empty_input
@@ -585,28 +568,30 @@ get_input:
     mov r2, #log_input_len
     bl write_log
     
-    @ Read input until we get a valid menu choice
+    @ Read entire line and extract first character
 get_input_loop:
-    @ Read single character from stdin
+    @ Read entire line from stdin (this consumes the newline too)
     mov r0, #STDIN
     ldr r1, =input_buffer
-    mov r2, #1
+    mov r2, #255
     mov r7, #SYS_READ
     swi 0
     
-    @ Load the character
+    @ Check if we got anything
+    cmp r0, #0
+    ble get_input_loop
+    
+    @ Load the first character
     ldr r1, =input_buffer
     ldrb r0, [r1]
     
-    @ Skip whitespace characters (newline, space, etc.)
-    cmp r0, #10    @ newline
+    @ Skip empty lines or whitespace-only input
+    cmp r0, #10    @ newline (empty line)
     beq get_input_loop
     cmp r0, #13    @ carriage return
     beq get_input_loop
     cmp r0, #32    @ space
     beq get_input_loop
-    
-    @ No need to consume line - send_custom will handle full line reading
     
     @ Log input received for valid character
     push {r0}
