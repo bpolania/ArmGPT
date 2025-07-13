@@ -594,6 +594,12 @@ get_input_loop:
     cmp r0, #32    @ space
     beq get_input_loop
     
+    @ We have a valid character, now consume the rest of the line
+    @ This prevents the newline from interfering with subsequent input
+    push {r0, lr}
+    bl consume_line
+    pop {r0, lr}
+    
     @ Log input received for valid character
     push {r0}
     ldr r1, =log_input_received
@@ -603,6 +609,33 @@ get_input_loop:
     
     @ Restore link register and return
     pop {lr}
+    bx lr
+
+@ Helper function to consume remaining characters until newline
+consume_line:
+    push {r0, r1, r2, r7, lr}
+consume_line_loop:
+    @ Read one character
+    mov r0, #STDIN
+    ldr r1, =input_buffer
+    add r1, r1, #1    @ Use different part of buffer
+    mov r2, #1
+    mov r7, #SYS_READ
+    swi 0
+    
+    @ Check if we read anything
+    cmp r0, #0
+    ble consume_line_done
+    
+    @ Check if it's a newline
+    ldr r1, =input_buffer
+    add r1, r1, #1
+    ldrb r0, [r1]
+    cmp r0, #10    @ newline
+    bne consume_line_loop
+    
+consume_line_done:
+    pop {r0, r1, r2, r7, lr}
     bx lr
 
 @ Send error handler
