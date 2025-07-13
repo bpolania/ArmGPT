@@ -393,6 +393,17 @@ send_custom:
     swi 0
     
     @ Read custom message line - simple approach like working Mac version
+    @ Force flush stdout to ensure prompt appears
+    mov r0, #STDOUT
+    mov r7, #SYS_FSYNC
+    swi 0
+    
+    @ Read custom message character by character to avoid buffering issues
+    ldr r4, =input_buffer    @ Buffer pointer
+    mov r5, #0               @ Character count
+    
+read_custom_loop:
+    @ Read one character
     mov r0, #STDIN
     ldr r1, =input_buffer
     mov r2, #255
