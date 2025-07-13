@@ -34,6 +34,12 @@ log_file: .ascii "acorn_comm.log\0"
 custom_prompt: .ascii "Enter custom message (max 255 chars): "
 custom_prompt_len = . - custom_prompt
 
+debug_before_read: .ascii "[DEBUG] About to read custom message...\n"
+debug_before_read_len = . - debug_before_read
+
+debug_read_result: .ascii "[DEBUG] Read completed\n"
+debug_read_result_len = . - debug_read_result
+
 continuous_msg: .ascii "Sending continuous data... (press Ctrl+C to stop)\n"
 continuous_len = . - continuous_msg
 
@@ -397,12 +403,29 @@ send_custom:
     mov r7, #SYS_FSYNC
     swi 0
     
+    @ DEBUG: Print debug message before reading
+    mov r0, #STDOUT
+    ldr r1, =debug_before_read
+    mov r2, #debug_before_read_len
+    mov r7, #SYS_WRITE
+    swi 0
+    
     @ Read custom message line (no leftover newline since get_input consumed it)
     mov r0, #STDIN
     ldr r1, =input_buffer
     mov r2, #255
     mov r7, #SYS_READ
     swi 0
+    
+    @ DEBUG: Print debug message after reading
+    push {r0, r1, r2, lr}
+    mov r0, #STDOUT
+    ldr r1, =debug_read_result
+    mov r2, #debug_read_result_len
+    mov r7, #SYS_WRITE
+    swi 0
+    pop {r0, r1, r2, lr}
+    
     @ Check if read was successful
     cmp r0, #0
     ble custom_empty_input
