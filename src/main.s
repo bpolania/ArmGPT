@@ -34,7 +34,7 @@ log_file: .ascii "acorn_comm.log\0"
 custom_prompt: .ascii "Enter custom message (max 255 chars): "
 custom_prompt_len = . - custom_prompt
 
-debug_before_read: .ascii "[DEBUG] About to read custom message...\n"
+debug_before_read: .ascii "About to read custom message...\n"
 debug_before_read_len = . - debug_before_read
 
 debug_read_result: .ascii "[DEBUG] Read completed\n"
