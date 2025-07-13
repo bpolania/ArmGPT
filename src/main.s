@@ -392,6 +392,7 @@ send_custom:
     mov r7, #SYS_WRITE
     swi 0
     
+    @ Read custom message line - simple approach like working Mac version
     @ Force flush stdout to ensure prompt appears
     mov r0, #STDOUT
     mov r7, #SYS_FSYNC
@@ -404,39 +405,26 @@ send_custom:
 read_custom_loop:
     @ Read one character
     mov r0, #STDIN
-    mov r1, r4              @ Current buffer position
-    mov r2, #1              @ Read 1 character
+    ldr r1, =input_buffer
+    mov r2, #255
     mov r7, #SYS_READ
     swi 0
     
-    @ Check if read failed
+    @ Check if read was successful
     cmp r0, #0
-    ble read_custom_done
+    ble custom_empty_input
     
-    @ Get the character
-    ldrb r6, [r4]
+    @ Store length and remove newline if present
+    mov r3, r0
+    ldr r4, =input_buffer
+    sub r5, r3, #1
+    ldrb r6, [r4, r5]
+    cmp r6, #10    @ newline
+    bne skip_newline_removal_custom
+    mov r3, r5     @ Use length without newline
     
-    @ Check for newline (end of input)
-    cmp r6, #10
-    beq read_custom_done
-    
-    @ Check for carriage return (also end of input)
-    cmp r6, #13
-    beq read_custom_done
-    
-    @ Increment buffer pointer and count
-    add r4, r4, #1
-    add r5, r5, #1
-    
-    @ Check if we've reached buffer limit (leave space for null terminator)
-    cmp r5, #254
-    blt read_custom_loop
-    
-read_custom_done:
-    @ Store length
-    mov r3, r5
-    
-    @ Check if we have any content
+skip_newline_removal_custom:
+    @ Check if we have any content after newline removal
     cmp r3, #0
     ble custom_empty_input
     
