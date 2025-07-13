@@ -28,13 +28,32 @@ echo "✓ Serial device found"
 echo ""
 
 echo "Building ARM assembly program..."
-./clean-build.sh
+echo "🗑️  Removing old logs..."
+rm -f build.log acorn_comm.log
+
+echo "🧹 Cleaning build artifacts..."
+make clean
+
+echo "🔨 Building with logging..."
+make build-log
+
 if [ $? -ne 0 ]; then
     echo "ERROR: Build failed"
     exit 1
 fi
 
-echo "✓ Build successful"
+echo "✅ Clean build completed!"
+
+if [ -f build.log ]; then
+    echo "📋 Build log created:"
+    echo "   - Check 'build.log' for details"
+    if grep -q "Error:" build.log; then
+        echo "❌ Build errors found in log"
+        exit 1
+    else
+        echo "✅ Build appears successful"
+    fi
+fi
 echo ""
 
 echo "=== READY FOR TESTING ==="
@@ -47,7 +66,7 @@ echo "Starting ARM assembly program in 3 seconds..."
 sleep 3
 
 # Run the ARM assembly program
-./acorn_comm
+../acorn_comm
 
 echo ""
 echo "=== TEST COMPLETED ==="
