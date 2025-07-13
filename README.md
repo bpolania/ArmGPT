@@ -118,10 +118,10 @@ ArmGPT/
 │   ├── setup-dual-pi.md      # GPIO setup guide (legacy)
 │   └── setup-usb-serial.md   # USB serial setup guide
 ├── scripts/
-│   ├── serial-monitor-receiver.sh  # Receiver Pi monitoring
-│   ├── test-listener.sh            # Diagnostic tools
-│   ├── detect-usb-serial.sh        # Device detection
-│   └── test-dual-pi.sh             # Automated testing
+│   ├── test-dual-pi.sh         # Main testing script with integrated build
+│   ├── detect-usb-serial.sh    # USB serial device detection
+│   ├── test-listener.sh        # Diagnostic testing and debugging
+│   └── git-update.sh           # Git workflow automation
 ├── Makefile                   # ARM build system
 ├── Makefile.mac              # macOS simulation build
 ├── CHANGELOG.md              # Development history
@@ -149,7 +149,7 @@ make clean && make
 ./acorn_comm
 
 # Run receiver Pi (separate terminal/Pi)
-./serial-monitor-receiver.sh
+./scripts/serial-monitor-receiver.sh
 ```
 
 ### **Phase 2: TinyLLM Integration** (In Development)
@@ -158,7 +158,7 @@ make clean && make
 git checkout feature/tinyLLM-integration
 
 # Run enhanced receiver with AI
-./serial-to-llm.sh
+./scripts/serial-to-llm.sh
 ```
 
 ---
@@ -175,9 +175,9 @@ make test         # Run program
 
 ### **Testing**
 ```bash
-./test-dual-pi.sh     # Automated dual Pi testing
-./test-listener.sh    # Diagnostic listener tests
-./detect-usb-serial.sh # Hardware detection
+./scripts/test-dual-pi.sh     # Automated dual Pi testing
+./scripts/test-listener.sh    # Diagnostic listener tests
+./scripts/detect-usb-serial.sh # Hardware detection
 ```
 
 ### **Debugging**
@@ -362,14 +362,37 @@ lsusb
 # Verify device permissions
 ls -la /dev/ttyUSB*
 
-# Fix permissions if needed
-./fix-usb-permissions.sh
+# Check if device exists
+./scripts/detect-usb-serial.sh
 ```
+
+#### **5. Serial Port Permission Issues**
+If you get "Permission denied" when accessing `/dev/ttyUSB0`:
+
+**Problem**: User not in correct groups to access serial devices.
+
+**Symptoms**:
+- `Permission denied` errors when running ARM assembly program
+- `/dev/ttyUSB0` owned by `dialout` or `plugdev` group
+
+**Solution**:
+```bash
+# Add user to both serial-related groups
+sudo usermod -a -G dialout,plugdev $USER
+
+# Verify groups (after logout/login)
+groups
+
+# Alternative: run with sudo (not recommended)
+sudo ./acorn_comm
+```
+
+**Important**: You must logout and login again for group changes to take effect.
 
 ### **Testing and Diagnostics**
 ```bash
 # Test listener (the breakthrough tool!)
-./test-listener.sh
+./scripts/test-listener.sh
 
 # Monitor serial port manually
 cat /dev/ttyUSB0
@@ -378,7 +401,7 @@ cat /dev/ttyUSB0
 stty -F /dev/ttyUSB0
 
 # Hardware detection
-./detect-usb-serial.sh
+./scripts/detect-usb-serial.sh
 ```
 
 ---

@@ -66,6 +66,41 @@ All notable changes to the ARM Assembly Cross-Platform Serial Communication Proj
 
 ---
 
+## [0.8.3] - 2025-07-13 - **PROJECT CLEANUP - SCRIPT CONSOLIDATION**
+
+### 🧹 **REPOSITORY CLEANUP AND OPTIMIZATION**
+
+#### Script Consolidation and Removal
+- **Major cleanup**: Reduced shell scripts from 9 to 4 (56% reduction)
+- **Eliminated redundancy**: Removed overlapping and outdated utility scripts
+- **Improved maintainability**: Consolidated functionality into essential scripts only
+
+#### Scripts Removed
+1. **`check-serial-devices.sh`** - Redundant with `detect-usb-serial.sh` (newer, more focused)
+2. **`update-usb-devices.sh`** - No longer needed (fixed device path `/dev/ttyUSB0`)
+3. **`serial-monitor.sh`** - Complex monitoring replaced by simpler `test-listener.sh`
+4. **`clean-build.sh`** - Functionality inlined into `test-dual-pi.sh`
+5. **`fix-usb-permissions.sh`** - One-time fix, solution documented in README
+
+#### Enhanced Scripts
+- **`test-dual-pi.sh`** - Now includes integrated build process with full logging
+- **README.md** - Added comprehensive troubleshooting section including serial permission fixes
+
+#### Final Essential Script Set
+1. **`test-dual-pi.sh`** - Main testing script with integrated build process
+2. **`detect-usb-serial.sh`** - USB serial device detection
+3. **`test-listener.sh`** - Diagnostic testing and debugging
+4. **`git-update.sh`** - Git workflow automation
+
+#### Documentation Improvements
+- **Troubleshooting section**: Added detailed serial port permission issue resolution
+- **Solution documentation**: USB permission fixes now in README instead of separate script
+- **User guidance**: Clear step-by-step instructions for common issues
+
+**🎯 Result: Cleaner, more maintainable repository with essential functionality only**
+
+---
+
 ## [Unreleased] - feature/llm-message-processing branch
 
 ### AI Integration Development Branch
