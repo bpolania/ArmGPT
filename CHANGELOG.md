@@ -22,9 +22,9 @@ All notable changes to the ARM Assembly Cross-Platform Serial Communication Proj
 - Device detection and configuration automation
 
 **🔧 LATEST FIX APPLIED:**
-- **Buffer Flush Issue**: Added `fsync()` system call to force data transmission
-- **Hardware Test Confirmed**: `echo "TEST" > /dev/ttyUSB0` works between Pis
-- **✅ BREAKTHROUGH ACHIEVED**: ARM program successfully transmits data!
+- **Custom Message Input Fixed**: Resolved option 3 input buffering issue
+- **Input System Overhauled**: `get_input` now consumes entire lines instead of single characters
+- **✅ ALL MENU OPTIONS WORKING**: Complete interactive functionality achieved!
 
 **📋 TESTING STATUS:**
 - **Single Pi**: ✅ Complete (menu, logic, error handling)
@@ -33,6 +33,36 @@ All notable changes to the ARM Assembly Cross-Platform Serial Communication Proj
 - **Serial Communication**: ✅ **CONFIRMED WORKING** with test-listener option 1
 
 **🎉 PROJECT COMPLETE: ARM Assembly Serial Communication System Fully Functional**
+
+---
+
+## [0.8.2] - 2025-07-13 - **CUSTOM MESSAGE INPUT FIX - ALL MENU OPTIONS WORKING**
+
+### 🎉 **COMPLETE MENU FUNCTIONALITY ACHIEVED**
+
+#### Custom Message Input Resolution
+- **Root Cause Identified**: Input buffering conflict between `get_input` and `send_custom` functions
+- **Problem**: `get_input` read single characters, leaving newline in buffer for `send_custom`
+- **Solution**: Modified `get_input` to consume entire input lines including newlines
+- **Result**: Option 3 (Send custom message) now works perfectly
+
+#### Technical Implementation
+- **Input System Overhaul**: `get_input` reads full lines (255 chars) instead of single characters
+- **Buffer Management**: Clean separation between menu selection and custom message input
+- **Debug Tracing**: Added temporary debug output to trace execution flow
+- **Cross-Platform Testing**: Verified fix works on both ARM assembly and Mac simulation
+
+#### Verification Results
+- **Option 1 (Test Message)**: ✅ Working
+- **Option 2 (Continuous Data)**: ✅ Working  
+- **Option 3 (Custom Message)**: ✅ **FIXED** - Now accepts and processes user input
+- **Option 4 (Exit)**: ✅ Working
+
+#### Files Modified
+- `src/main.s` - Fixed `get_input` function to consume entire lines
+- Added debug output for troubleshooting (temporary)
+
+**🏆 ARM Assembly Menu System: 100% FUNCTIONAL**
 
 ---
 
