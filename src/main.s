@@ -392,15 +392,39 @@ send_custom:
     mov r7, #SYS_WRITE
     swi 0
     
-    @ Read custom message
+    @ Clear input buffer first
+    ldr r4, =input_buffer
+    mov r5, #0
+    strb r5, [r4]
+    
+    @ Read custom message with proper line reading
     mov r0, #STDIN
     ldr r1, =input_buffer
     mov r2, #255
     mov r7, #SYS_READ
     swi 0
     
-    @ Store length
+    @ Check if read was successful
+    cmp r0, #0
+    ble custom_read_error
+    
+    @ Store length (subtract 1 to remove newline if present)
     mov r3, r0
+    cmp r3, #1
+    ble custom_read_error
+    
+    @ Remove trailing newline if present
+    ldr r4, =input_buffer
+    sub r5, r3, #1
+    ldrb r6, [r4, r5]
+    cmp r6, #10    @ newline
+    bne skip_newline_removal
+    mov r3, r5     @ Use length without newline
+    
+skip_newline_removal:
+    @ Ensure we have some content
+    cmp r3, #0
+    ble custom_read_error
     
     @ Send custom message to serial port
     ldr r0, =serial_fd
@@ -415,18 +439,34 @@ send_custom:
     mov r7, #SYS_WRITE
     swi 0
     
+    @ Force flush the serial output buffer after write
+    push {r0, r1, r2, lr}
+    ldr r0, =serial_fd
+    ldr r0, [r0]
+    mov r7, #SYS_FSYNC    @ Force flush to device
+    swi 0
+    pop {r0, r1, r2, lr}
+    
     @ Check for errors
     cmp r0, #0
     blt send_error
     
     b custom_success
 
+custom_read_error:
+    @ Handle empty or invalid input
+    mov r0, #STDOUT
+    ldr r1, =error_msg
+    mov r2, #error_len
+    mov r7, #SYS_WRITE
+    swi 0
+    b main_loop
+
 custom_serial_unavailable:
     @ Simulate successful send when serial unavailable
     mov r0, r3
 
 custom_success:
-    
     @ Print success message
     mov r0, #STDOUT
     ldr r1, =success_msg
