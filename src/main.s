@@ -10,12 +10,14 @@
 
 @ Data section
 .data
-platform_msg: .ascii "Acorn Communication Simulator - ARM Assembly\n"
+platform_msg: .ascii "ArmGPT Chat Interface - Connecting to AI Assistant\n"
 platform_len = . - platform_msg
 
-menu_msg: .ascii "\n=== Acorn Serial Communication Menu ===\n1. Send test message\n2. Send continuous data\n3. Send custom message\n4. Exit\nSelect option: "
-menu_len = . - menu_msg
+@ Initial priming message for TinyLlama
+priming_msg: .ascii "You are a helpful AI assistant. Please respond to user messages in a conversational manner. Ready to chat!\n"
+priming_len = . - priming_msg
 
+@ Legacy test message (kept for compatibility)
 test_msg: .ascii "TEST MESSAGE FROM ACORN SYSTEM\n"
 test_len = . - test_msg
 
@@ -31,10 +33,10 @@ serial_init_len = . - serial_init_msg
 serial_device: .ascii "/dev/ttyUSB0\0"
 dev_null_path: .ascii "/dev/null\0"
 log_file: .ascii "acorn_comm.log\0"
-custom_prompt: .ascii "Enter custom message (max 255 chars): "
-custom_prompt_len = . - custom_prompt
+chat_prompt: .ascii "You: "
+chat_prompt_len = . - chat_prompt
 
-debug_before_read: .ascii "[DEBUG] About to read custom message...\n"
+debug_before_read: .ascii "About to read custom message...\n"
 debug_before_read_len = . - debug_before_read
 
 debug_read_result: .ascii "[DEBUG] Read completed\n"
@@ -47,7 +49,7 @@ bypass_test_msg: .ascii "TEST: Reached critical section\n"
 bypass_test_len = . - bypass_test_msg
 
 @ Log messages
-log_startup: .ascii "[STARTUP] Acorn Communication Simulator started\n"
+log_startup: .ascii "[STARTUP] ArmGPT Chat Interface started\n"
 log_startup_len = . - log_startup
 
 log_serial_init: .ascii "[SERIAL] Initializing serial port /dev/ttyUSB0\n"
@@ -65,8 +67,8 @@ log_test_msg_len = . - log_test_msg
 log_continuous: .ascii "[ACTION] Starting continuous data transmission\n"
 log_continuous_len = . - log_continuous
 
-log_custom: .ascii "[ACTION] Sending custom message\n"
-log_custom_len = . - log_custom
+log_chat: .ascii "[CHAT] Sending user message to AI\n"
+log_chat_len = . - log_chat
 
 log_exit: .ascii "[EXIT] Program terminated normally\n"
 log_exit_len = . - log_exit
@@ -80,8 +82,11 @@ log_input_len = . - log_input
 log_input_received: .ascii "[DEBUG] User input received\n"
 log_input_received_len = . - log_input_received
 
-log_main_loop: .ascii "[DEBUG] Entering main loop\n"
-log_main_loop_len = . - log_main_loop
+log_chat_loop: .ascii "[DEBUG] Entering chat loop\n"
+log_chat_loop_len = . - log_chat_loop
+
+log_priming: .ascii "[INIT] Sending priming message to AI\n"
+log_priming_len = . - log_priming
 
 log_store_fd: .ascii "[DEBUG] Storing file descriptor\n"
 log_store_fd_len = . - log_store_fd
@@ -137,57 +142,23 @@ _start:
     mov r7, #SYS_WRITE
     swi 0
     
-    @ TEST: Skip serial initialization and logging
-    @ Just print a simple message to see if we can get past this point
-    mov r0, #STDOUT
-    ldr r1, =bypass_test_msg
-    mov r2, #bypass_test_len
-    mov r7, #SYS_WRITE
-    swi 0
-    
     @ Initialize serial port
     bl init_serial
-    
-    @ Log before storing file descriptor
-    @ldr r1, =log_store_fd
-    @mov r2, #log_store_fd_len
-    @bl write_log
     
     @ Store file descriptor (even if -1 for error)
     ldr r1, =serial_fd
     str r0, [r1]
     
-    @ Test: Enable main loop write_log to test function context theory
-    ldr r1, =log_main_loop
-    mov r2, #log_main_loop_len
-    bl write_log
+    @ Send initial priming message to TinyLlama
+    bl send_priming_message
     
-main_loop:
-    @ Show menu
-    bl show_menu
+    @ Start chat loop (equivalent to always choosing option 3)
+chat_loop:
+    @ Get user input and send to AI (combined function)
+    bl send_chat
     
-    @ Get user choice
-    bl get_input
-    
-    @ Process choice
-    cmp r0, #'1'
-    beq send_test
-    cmp r0, #'2'
-    beq send_continuous
-    cmp r0, #'3'
-    beq send_custom
-    cmp r0, #'4'
-    beq exit_program
-    
-    @ Invalid choice, loop again
-    @ Log invalid choice for debugging
-    push {r0, r1, r2, lr}
-    ldr r1, =log_main_loop    @ Reuse existing log message
-    mov r2, #log_main_loop_len
-    bl write_log
-    pop {r0, r1, r2, lr}
-    
-    b main_loop
+    @ Continue chat loop
+    b chat_loop
 
 @ Send test message function
 send_test:
@@ -318,7 +289,7 @@ test_success:
     mov r7, #SYS_WRITE
     swi 0
     
-    b main_loop
+    b chat_loop
 
 @ Send continuous data function
 send_continuous:
@@ -382,19 +353,19 @@ delay_loop:
     cmp r5, #10  @ Send 10 messages then stop
     blt continuous_loop
     
-    b main_loop
+    b chat_loop
 
 @ Send custom message function
 send_custom:
     @ Log action
-    ldr r1, =log_custom
-    mov r2, #log_custom_len
+    ldr r1, =log_chat
+    mov r2, #log_chat_len
     bl write_log
     
     @ Print prompt
     mov r0, #STDOUT
-    ldr r1, =custom_prompt
-    mov r2, #custom_prompt_len
+    ldr r1, =chat_prompt
+    mov r2, #chat_prompt_len
     mov r7, #SYS_WRITE
     swi 0
     
@@ -478,7 +449,7 @@ custom_empty_input:
     mov r2, #error_len
     mov r7, #SYS_WRITE
     swi 0
-    b main_loop
+    b chat_loop
 
 custom_serial_unavailable:
     @ Simulate successful send when serial unavailable
@@ -492,7 +463,137 @@ custom_success:
     mov r7, #SYS_WRITE
     swi 0
     
-    b main_loop
+    b chat_loop
+
+@ Send priming message to AI function
+send_priming_message:
+    @ ARM calling convention: preserve lr for nested function calls
+    push {lr}
+    
+    @ Log priming action
+    ldr r1, =log_priming
+    mov r2, #log_priming_len
+    bl write_log
+    
+    @ Send priming message to serial port
+    ldr r0, =serial_fd
+    ldr r0, [r0]
+    
+    @ Check if serial port is available
+    cmp r0, #0
+    ble priming_serial_unavailable
+    
+    ldr r1, =priming_msg
+    mov r2, #priming_len
+    mov r7, #SYS_WRITE
+    swi 0
+    
+    @ Force flush the serial output buffer
+    push {r0, r1, r2, lr}
+    ldr r0, =serial_fd
+    ldr r0, [r0]
+    mov r7, #SYS_FSYNC
+    swi 0
+    pop {r0, r1, r2, lr}
+    
+priming_serial_unavailable:
+    @ Continue regardless of serial status
+    pop {lr}
+    bx lr
+
+@ Send chat function (like send_custom but for chat interface)
+send_chat:
+    @ ARM calling convention: preserve lr for nested function calls
+    push {lr}
+    
+    @ Log chat action
+    ldr r1, =log_chat
+    mov r2, #log_chat_len
+    bl write_log
+    
+    @ Print chat prompt
+    mov r0, #STDOUT
+    ldr r1, =chat_prompt
+    mov r2, #chat_prompt_len
+    mov r7, #SYS_WRITE
+    swi 0
+    
+    @ Force flush stdout to ensure prompt appears
+    mov r0, #STDOUT
+    mov r7, #SYS_FSYNC
+    swi 0
+    
+    @ Read chat message from user
+    mov r0, #STDIN
+    ldr r1, =input_buffer
+    mov r2, #255
+    mov r7, #SYS_READ
+    swi 0
+    
+    @ Check if read was successful
+    cmp r0, #0
+    ble chat_empty_input
+    
+    @ Store length and remove newline if present
+    mov r3, r0
+    ldr r4, =input_buffer
+    sub r5, r3, #1
+    ldrb r6, [r4, r5]
+    cmp r6, #10    @ newline
+    bne skip_newline_removal_chat
+    mov r3, r5     @ Use length without newline
+    
+skip_newline_removal_chat:
+    @ Check if we have any content after newline removal
+    cmp r3, #0
+    ble chat_empty_input
+    
+    @ Send chat message to serial port
+    ldr r0, =serial_fd
+    ldr r0, [r0]
+    
+    @ Check if serial port is available
+    cmp r0, #0
+    ble chat_serial_unavailable
+    
+    ldr r1, =input_buffer
+    mov r2, r3
+    mov r7, #SYS_WRITE
+    swi 0
+    
+    @ Force flush the serial output buffer
+    push {r0, r1, r2, lr}
+    ldr r0, =serial_fd
+    ldr r0, [r0]
+    mov r7, #SYS_FSYNC
+    swi 0
+    pop {r0, r1, r2, lr}
+    
+    @ Check for errors
+    cmp r0, #0
+    blt send_error
+    
+    b chat_success
+
+chat_empty_input:
+    @ Handle empty input - just continue chat loop
+    pop {lr}
+    bx lr
+
+chat_serial_unavailable:
+    @ Simulate successful send when serial unavailable
+    mov r0, r3
+
+chat_success:
+    @ Print success message
+    mov r0, #STDOUT
+    ldr r1, =success_msg
+    mov r2, #success_len
+    mov r7, #SYS_WRITE
+    swi 0
+    
+    pop {lr}
+    bx lr
 
 @ Initialize serial port function
 init_serial:
@@ -561,25 +662,6 @@ init_error:
     pop {lr}
     bx lr
 
-@ Show menu function
-show_menu:
-    @ ARM calling convention: preserve lr and frame pointer
-    push {lr}
-    
-    @ Log menu display with proper function call setup
-    ldr r1, =log_menu
-    mov r2, #log_menu_len
-    bl write_log
-    
-    @ Restore link register before continuing
-    pop {lr}
-    
-    mov r0, #STDOUT
-    ldr r1, =menu_msg
-    mov r2, #menu_len
-    mov r7, #SYS_WRITE
-    swi 0
-    bx lr
 
 @ Get input function
 get_input:
@@ -635,7 +717,7 @@ send_error:
     mov r2, #error_len
     mov r7, #SYS_WRITE
     swi 0
-    b main_loop
+    b chat_loop
 
 @ Clean exit function
 exit_program:
