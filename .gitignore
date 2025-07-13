@@ -1,0 +1,61 @@
+# Build artifacts
+*.o
+*.elf
+*.out
+acorn_comm
+main_mac_x64
+
+# Log files
+*.log
+build.log
+build_errors.log
+acorn_comm.log
+receiver_monitor.log
+serial_devices.log
+
+# Temporary files
+*.tmp
+*.temp
+*~
+.#*
+
+# macOS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Linux
+*~
+.fuse_hidden*
+.directory
+.Trash-*
+.nfs*
+
+# Editor backups and temp files
+*.swp
+*.swo
+*~
+.vscode/
+.idea/
+*.sublime-*
+
+# Assembly specific
+*.lst
+*.map
+*.sym
+
+# Core dumps
+core
+core.*
+
+# Backup files
+*.bak
+*.backup
+*.old
+
+# Generated files
+src/main_mac_x64.s
