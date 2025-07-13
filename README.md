@@ -1,5 +1,20 @@
 # ARM Assembly Cross-Platform Serial Communication Project
 
+## 🚀 **Quick Start**
+
+### **Setup and Run (First Time)**
+```bash
+# 1. Setup (handles UART, permissions, build)
+./setup.sh
+
+# 2. Run the program
+./acorn_comm
+```
+
+That's it! The setup script handles everything needed to get the ARM assembly serial communication working.
+
+---
+
 ## 🎯 **Project Status: FULLY FUNCTIONAL + AI INTEGRATION PHASE**
 
 ### 📖 **Project Origin**
