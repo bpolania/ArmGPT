@@ -33,3 +33,20 @@ This is an ARM assembly cross-platform serial communication project that simulat
 - Maintain compatibility with both native and cross-compilation
 - Document any changes in CHANGELOG.md
 - Follow ARM assembly best practices and conventions
+
+## Development Workflow
+
+**IMPORTANT**: This ARM assembly project must be built and tested on the Raspberry Pi, not on the local development machine.
+
+### Typical Workflow:
+1. Make changes to source files locally
+2. Commit and push changes to the repository
+3. On the Raspberry Pi: `git pull` to get latest changes
+4. On the Raspberry Pi: Run `./setup.sh` or `make clean && make` to build
+5. On the Raspberry Pi: Test the ARM assembly program with `./acorn_comm`
+
+### Why Pi-based Testing is Required:
+- ARM assembly code is architecture-specific
+- Serial device paths (`/dev/ttyUSB0`, `/dev/serial0`) only exist on Pi
+- System calls and hardware interfaces are Pi-specific
+- Build tools and linker behavior may differ between architectures

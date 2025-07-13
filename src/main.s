@@ -662,25 +662,6 @@ init_error:
     pop {lr}
     bx lr
 
-@ Show menu function
-show_menu:
-    @ ARM calling convention: preserve lr and frame pointer
-    push {lr}
-    
-    @ Log menu display with proper function call setup
-    ldr r1, =log_menu
-    mov r2, #log_menu_len
-    bl write_log
-    
-    @ Restore link register before continuing
-    pop {lr}
-    
-    mov r0, #STDOUT
-    ldr r1, =menu_msg
-    mov r2, #menu_len
-    mov r7, #SYS_WRITE
-    swi 0
-    bx lr
 
 @ Get input function
 get_input:
