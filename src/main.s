@@ -392,39 +392,48 @@ send_custom:
     mov r7, #SYS_WRITE
     swi 0
     
-    @ Clear input buffer first
-    ldr r4, =input_buffer
-    mov r5, #0
-    strb r5, [r4]
+    @ Read custom message character by character to avoid buffering issues
+    ldr r4, =input_buffer    @ Buffer pointer
+    mov r5, #0               @ Character count
     
-    @ Read custom message with proper line reading
+read_custom_loop:
+    @ Read one character
     mov r0, #STDIN
-    ldr r1, =input_buffer
-    mov r2, #255
+    mov r1, r4              @ Current buffer position
+    mov r2, #1              @ Read 1 character
     mov r7, #SYS_READ
     swi 0
     
-    @ Check if read was successful
+    @ Check if read failed
     cmp r0, #0
-    ble custom_read_error
+    ble read_custom_done
     
-    @ Store length (subtract 1 to remove newline if present)
-    mov r3, r0
-    cmp r3, #1
-    ble custom_read_error
+    @ Get the character
+    ldrb r6, [r4]
     
-    @ Remove trailing newline if present
-    ldr r4, =input_buffer
-    sub r5, r3, #1
-    ldrb r6, [r4, r5]
-    cmp r6, #10    @ newline
-    bne skip_newline_removal
-    mov r3, r5     @ Use length without newline
+    @ Check for newline (end of input)
+    cmp r6, #10
+    beq read_custom_done
     
-skip_newline_removal:
-    @ Ensure we have some content
+    @ Check for carriage return (also end of input)
+    cmp r6, #13
+    beq read_custom_done
+    
+    @ Increment buffer pointer and count
+    add r4, r4, #1
+    add r5, r5, #1
+    
+    @ Check if we've reached buffer limit (leave space for null terminator)
+    cmp r5, #254
+    blt read_custom_loop
+    
+read_custom_done:
+    @ Store length
+    mov r3, r5
+    
+    @ Check if we have any content
     cmp r3, #0
-    ble custom_read_error
+    ble custom_empty_input
     
     @ Send custom message to serial port
     ldr r0, =serial_fd
@@ -439,11 +448,11 @@ skip_newline_removal:
     mov r7, #SYS_WRITE
     swi 0
     
-    @ Force flush the serial output buffer after write
+    @ Force flush the serial output buffer
     push {r0, r1, r2, lr}
     ldr r0, =serial_fd
     ldr r0, [r0]
-    mov r7, #SYS_FSYNC    @ Force flush to device
+    mov r7, #SYS_FSYNC
     swi 0
     pop {r0, r1, r2, lr}
     
@@ -453,8 +462,8 @@ skip_newline_removal:
     
     b custom_success
 
-custom_read_error:
-    @ Handle empty or invalid input
+custom_empty_input:
+    @ Handle empty input - show error and return to menu
     mov r0, #STDOUT
     ldr r1, =error_msg
     mov r2, #error_len
