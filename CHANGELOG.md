@@ -66,6 +66,52 @@ All notable changes to the ARM Assembly Cross-Platform Serial Communication Proj
 
 ---
 
+## [0.8.4] - 2025-07-13 - **SETUP AUTOMATION AND PATH FIXES**
+
+### 🚀 **PRODUCTION-READY SETUP SYSTEM**
+
+#### Automated Setup Script
+- **One-command setup**: Created comprehensive `setup.sh` for first-time and reset configuration
+- **Complete automation**: Handles UART enablement, permissions, USB detection, and build process
+- **Platform verification**: Checks ARM architecture and guides through Raspberry Pi configuration
+- **User-friendly**: Interactive prompts and clear error messages with resolution steps
+
+#### Setup Script Features
+- **UART Configuration**: Automatic detection and raspi-config guidance for serial port enablement
+- **Permission Management**: Adds user to dialout group for serial port access
+- **USB Serial Detection**: Integrates with existing detection scripts for hardware validation
+- **Build Process**: Clean build with comprehensive error checking and verification
+- **Setup Verification**: 4-point checklist ensuring everything is ready before first run
+
+#### Script Path Robustness
+- **Location-independent execution**: `test-dual-pi.sh` now works from any directory
+- **Automatic path resolution**: Script detects its own location and finds project root
+- **Cross-directory compatibility**: Can be run from project root, scripts/, or any location
+
+#### Quick Start Documentation
+- **Simplified README**: Added prominent Quick Start section with 2-step setup
+- **User-focused approach**: New users can get running immediately with `./setup.sh` then `./acorn_comm`
+- **Reduced friction**: No need to read full documentation before getting started
+
+#### Technical Implementation
+```bash
+# Location-independent script execution
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
+cd "$PROJECT_ROOT"
+```
+
+#### Files Added
+- `setup.sh` - Comprehensive setup automation script
+
+#### Files Modified
+- `scripts/test-dual-pi.sh` - Path robustness improvements
+- `README.md` - Quick Start section for immediate user onboarding
+
+**🎯 Result: Zero-friction setup experience for new users with production-ready automation**
+
+---
+
 ## [0.8.3] - 2025-07-13 - **PROJECT CLEANUP - SCRIPT CONSOLIDATION**
 
 ### 🧹 **REPOSITORY CLEANUP AND OPTIMIZATION**

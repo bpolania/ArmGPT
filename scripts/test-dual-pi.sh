@@ -2,6 +2,13 @@
 # Dual Pi Testing Script - Run on SENDER Pi (Pi 1)
 # This script helps coordinate testing between two Raspberry Pis
 
+# Get the directory containing this script
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
+
+# Change to project root to ensure relative paths work
+cd "$PROJECT_ROOT"
+
 echo "=== DUAL RASPBERRY PI SERIAL COMMUNICATION TEST ==="
 echo ""
 echo "SENDER PI (This Pi) - ARM Assembly Program"
@@ -66,7 +73,7 @@ echo "Starting ARM assembly program in 3 seconds..."
 sleep 3
 
 # Run the ARM assembly program
-../acorn_comm
+./acorn_comm
 
 echo ""
 echo "=== TEST COMPLETED ==="
