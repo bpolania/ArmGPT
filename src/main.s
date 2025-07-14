@@ -103,6 +103,15 @@ log_fallback_attempt_len = . - log_fallback_attempt
 log_fallback_success: .ascii "[DEBUG] Fallback write successful\n"
 log_fallback_success_len = . - log_fallback_success
 
+log_waiting_response: .ascii "[DEBUG] Waiting for response...\n"
+log_waiting_response_len = . - log_waiting_response
+
+log_received_response: .ascii "[RESPONSE] "
+log_received_response_len = . - log_received_response
+
+log_listening_start: .ascii "[DEBUG] Starting continuous listening mode\n"
+log_listening_start_len = . - log_listening_start
+
 @ Timestamp format strings
 timestamp_prefix: .ascii "["
 bracket_close: .ascii "] "
@@ -116,6 +125,7 @@ single_char: .ascii "X"
 serial_fd: .space 4
 log_fd: .space 4
 input_buffer: .space 256
+response_buffer: .space 512
 counter: .space 4
 termios_buf: .space 36
 timestamp_buffer: .space 32
@@ -152,13 +162,171 @@ _start:
     @ Send initial priming message to TinyLlama
     bl send_priming_message
     
-    @ Start chat loop (equivalent to always choosing option 3)
+    @ Start continuous listening mode
+    ldr r1, =log_listening_start
+    mov r2, #log_listening_start_len
+    bl write_log
+    
+    @ Start interactive chat loop with continuous listening
 chat_loop:
-    @ Get user input and send to AI (combined function)
-    bl send_chat
+    @ Check for incoming responses first
+    bl check_for_response
+    
+    @ Show prompt and get user input (non-blocking approach)
+    bl prompt_and_read_input
     
     @ Continue chat loop
     b chat_loop
+
+@ Check for incoming responses (non-blocking)
+check_for_response:
+    @ ARM calling convention: preserve lr for nested function calls
+    push {lr}
+    
+    @ Check if serial port is available
+    ldr r0, =serial_fd
+    ldr r0, [r0]
+    cmp r0, #0
+    ble check_response_unavailable
+    
+    @ Try to read from serial port (non-blocking)
+    ldr r1, =response_buffer
+    mov r2, #512          @ Read up to 512 bytes
+    mov r7, #SYS_READ
+    swi 0
+    
+    @ Check if we received anything
+    cmp r0, #0
+    ble check_response_nothing
+    
+    @ We got a response - display it immediately
+    mov r3, r0            @ Save response length
+    
+    @ Print response prefix
+    mov r0, #STDOUT
+    ldr r1, =log_received_response
+    mov r2, #log_received_response_len
+    mov r7, #SYS_WRITE
+    swi 0
+    
+    @ Print the actual response
+    mov r0, #STDOUT
+    ldr r1, =response_buffer
+    mov r2, r3
+    mov r7, #SYS_WRITE
+    swi 0
+    
+    @ Add newline if response doesn't end with one
+    ldr r4, =response_buffer
+    sub r5, r3, #1
+    ldrb r6, [r4, r5]
+    cmp r6, #10    @ newline
+    beq check_response_done
+    
+    @ Add newline
+    mov r0, #STDOUT
+    ldr r1, =newline
+    mov r2, #1
+    mov r7, #SYS_WRITE
+    swi 0
+    
+check_response_done:
+    @ Force flush output
+    mov r0, #STDOUT
+    mov r7, #SYS_FSYNC
+    swi 0
+    
+check_response_nothing:
+check_response_unavailable:
+    pop {lr}
+    bx lr
+
+@ Prompt and read user input
+prompt_and_read_input:
+    @ ARM calling convention: preserve lr for nested function calls
+    push {lr}
+    
+    @ Print chat prompt
+    mov r0, #STDOUT
+    ldr r1, =chat_prompt
+    mov r2, #chat_prompt_len
+    mov r7, #SYS_WRITE
+    swi 0
+    
+    @ Force flush stdout to ensure prompt appears
+    mov r0, #STDOUT
+    mov r7, #SYS_FSYNC
+    swi 0
+    
+    @ Read user input
+    mov r0, #STDIN
+    ldr r1, =input_buffer
+    mov r2, #255
+    mov r7, #SYS_READ
+    swi 0
+    
+    @ Check if read was successful
+    cmp r0, #0
+    ble prompt_empty_input
+    
+    @ Process and send the input
+    bl process_and_send_input
+    
+prompt_empty_input:
+    pop {lr}
+    bx lr
+
+@ Process and send user input
+process_and_send_input:
+    @ ARM calling convention: preserve lr for nested function calls
+    push {lr}
+    
+    @ Store length and remove newline if present
+    mov r3, r0
+    ldr r4, =input_buffer
+    sub r5, r3, #1
+    ldrb r6, [r4, r5]
+    cmp r6, #10    @ newline
+    bne skip_newline_removal_process
+    mov r3, r5     @ Use length without newline
+    
+skip_newline_removal_process:
+    @ Check if we have any content after newline removal
+    cmp r3, #0
+    ble process_empty_input
+    
+    @ Send message to serial port
+    ldr r0, =serial_fd
+    ldr r0, [r0]
+    
+    @ Check if serial port is available
+    cmp r0, #0
+    ble process_serial_unavailable
+    
+    ldr r1, =input_buffer
+    mov r2, r3
+    mov r7, #SYS_WRITE
+    swi 0
+    
+    @ Force flush the serial output buffer
+    push {r0, r1, r2, lr}
+    ldr r0, =serial_fd
+    ldr r0, [r0]
+    mov r7, #SYS_FSYNC
+    swi 0
+    pop {r0, r1, r2, lr}
+    
+    @ Print success message
+    mov r0, #STDOUT
+    ldr r1, =success_msg
+    mov r2, #success_len
+    mov r7, #SYS_WRITE
+    swi 0
+    
+process_empty_input:
+process_serial_unavailable:
+    pop {lr}
+    bx lr
 
 @ Send test message function
 send_test:
