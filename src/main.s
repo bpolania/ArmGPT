@@ -103,6 +103,12 @@ log_fallback_attempt_len = . - log_fallback_attempt
 log_fallback_success: .ascii "[DEBUG] Fallback write successful\n"
 log_fallback_success_len = . - log_fallback_success
 
+log_waiting_response: .ascii "[DEBUG] Waiting for response...\n"
+log_waiting_response_len = . - log_waiting_response
+
+log_received_response: .ascii "[RESPONSE] "
+log_received_response_len = . - log_received_response
+
 @ Timestamp format strings
 timestamp_prefix: .ascii "["
 bracket_close: .ascii "] "
@@ -116,6 +122,7 @@ single_char: .ascii "X"
 serial_fd: .space 4
 log_fd: .space 4
 input_buffer: .space 256
+response_buffer: .space 512
 counter: .space 4
 termios_buf: .space 36
 timestamp_buffer: .space 32
@@ -573,7 +580,10 @@ skip_newline_removal_chat:
     cmp r0, #0
     blt send_error
     
-    b chat_success
+    @ After sending successfully, wait for response
+    bl read_response
+    
+    b chat_complete
 
 chat_empty_input:
     @ Handle empty input - just continue chat loop
@@ -583,8 +593,9 @@ chat_empty_input:
 chat_serial_unavailable:
     @ Simulate successful send when serial unavailable
     mov r0, r3
+    b chat_complete
 
-chat_success:
+chat_complete:
     @ Print success message
     mov r0, #STDOUT
     ldr r1, =success_msg
@@ -592,6 +603,77 @@ chat_success:
     mov r7, #SYS_WRITE
     swi 0
     
+    pop {lr}
+    bx lr
+
+@ Read response from serial port function
+read_response:
+    @ ARM calling convention: preserve lr for nested function calls
+    push {lr}
+    
+    @ Log that we're waiting for response
+    ldr r1, =log_waiting_response
+    mov r2, #log_waiting_response_len
+    bl write_log
+    
+    @ Check if serial port is available
+    ldr r0, =serial_fd
+    ldr r0, [r0]
+    cmp r0, #0
+    ble read_response_unavailable
+    
+    @ Read response from serial port
+    ldr r1, =response_buffer
+    mov r2, #512          @ Read up to 512 bytes
+    mov r7, #SYS_READ
+    swi 0
+    
+    @ Check if we received anything
+    cmp r0, #0
+    ble read_response_nothing
+    
+    @ We got a response - display it
+    mov r3, r0            @ Save response length
+    
+    @ Print response prefix
+    mov r0, #STDOUT
+    ldr r1, =log_received_response
+    mov r2, #log_received_response_len
+    mov r7, #SYS_WRITE
+    swi 0
+    
+    @ Print the actual response
+    mov r0, #STDOUT
+    ldr r1, =response_buffer
+    mov r2, r3
+    mov r7, #SYS_WRITE
+    swi 0
+    
+    @ Add newline if response doesn't end with one
+    ldr r4, =response_buffer
+    sub r5, r3, #1
+    ldrb r6, [r4, r5]
+    cmp r6, #10    @ newline
+    beq read_response_done
+    
+    @ Add newline
+    mov r0, #STDOUT
+    ldr r1, =newline
+    mov r2, #1
+    mov r7, #SYS_WRITE
+    swi 0
+    
+read_response_done:
+    pop {lr}
+    bx lr
+
+read_response_nothing:
+    @ No response received - just continue
+    pop {lr}
+    bx lr
+
+read_response_unavailable:
+    @ Serial port not available - just continue
     pop {lr}
     bx lr
 
