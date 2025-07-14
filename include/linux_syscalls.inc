@@ -13,6 +13,13 @@
 .equ SYS_EXIT,      1
 .equ SYS_FORK,      2
 .equ SYS_GETPID,    20
+.equ SYS_WAITPID,   7
+.equ SYS_KILL,      37
+
+@ Signal handling
+.equ SYS_SIGNAL,    48
+.equ SIGCHLD,       17
+.equ SIGUSR1,       10
 
 @ Time operations
 .equ SYS_TIME,      13

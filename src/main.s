@@ -120,6 +120,11 @@ newline: .ascii "\n"
 @ Single character for minimal write test
 single_char: .ascii "X"
 
+@ Sleep time structure for nanosleep (100ms = 0.1 seconds)
+sleep_time:
+    .word 0          @ seconds
+    .word 100000000  @ nanoseconds (100ms)
+
 @ BSS section for uninitialized data
 .bss
 serial_fd: .space 4
@@ -167,37 +172,55 @@ _start:
     mov r2, #log_listening_start_len
     bl write_log
     
-    @ Start interactive chat loop with continuous listening
-chat_loop:
-    @ Check for incoming responses first
-    bl check_for_response
+    @ Fork a background process for continuous listening
+    mov r7, #SYS_FORK
+    swi 0
     
-    @ Show prompt and get user input (non-blocking approach)
+    @ Check if we're in parent or child process
+    cmp r0, #0
+    beq child_listener_process    @ Child process (r0 = 0)
+    blt fork_error               @ Fork failed (r0 < 0)
+    
+    @ Parent process continues with user interaction
+    str r0, [sp, #-4]!          @ Store child PID on stack
+    b parent_chat_loop
+    
+child_listener_process:
+    @ Child process: dedicated to listening for responses
+    bl continuous_listener
+    @ Child should never return, but if it does, exit
+    mov r0, #0
+    mov r7, #SYS_EXIT
+    swi 0
+    
+fork_error:
+    @ Fork failed, continue without background listener
+    @ Fall through to single-process mode
+    
+parent_chat_loop:
+    @ Parent process: handle user input and sending
     bl prompt_and_read_input
-    
-    @ Continue chat loop
-    b chat_loop
+    b parent_chat_loop
 
-@ Check for incoming responses (non-blocking)
-check_for_response:
-    @ ARM calling convention: preserve lr for nested function calls
-    push {lr}
-    
+@ Continuous listener function (child process)
+continuous_listener:
+    @ This function runs in a separate process dedicated to listening
+continuous_listener_loop:
     @ Check if serial port is available
     ldr r0, =serial_fd
     ldr r0, [r0]
     cmp r0, #0
-    ble check_response_unavailable
+    ble listener_sleep
     
-    @ Try to read from serial port (non-blocking)
+    @ Read from serial port (blocking in child process is OK)
     ldr r1, =response_buffer
-    mov r2, #512          @ Read up to 512 bytes
+    mov r2, #512
     mov r7, #SYS_READ
     swi 0
     
     @ Check if we received anything
     cmp r0, #0
-    ble check_response_nothing
+    ble listener_sleep
     
     @ We got a response - display it immediately
     mov r3, r0            @ Save response length
@@ -221,7 +244,7 @@ check_for_response:
     sub r5, r3, #1
     ldrb r6, [r4, r5]
     cmp r6, #10    @ newline
-    beq check_response_done
+    beq listener_continue
     
     @ Add newline
     mov r0, #STDOUT
@@ -230,16 +253,21 @@ check_for_response:
     mov r7, #SYS_WRITE
     swi 0
     
-check_response_done:
+listener_continue:
     @ Force flush output
     mov r0, #STDOUT
     mov r7, #SYS_FSYNC
     swi 0
+    b continuous_listener_loop
     
-check_response_nothing:
-check_response_unavailable:
-    pop {lr}
-    bx lr
+listener_sleep:
+    @ Brief sleep to avoid busy waiting when no data
+    ldr r0, =sleep_time
+    mov r1, #0
+    mov r7, #SYS_NANOSLEEP
+    swi 0
+    b continuous_listener_loop
+
 
 @ Prompt and read user input
 prompt_and_read_input:
