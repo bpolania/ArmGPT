@@ -15,7 +15,7 @@ That's it! The setup script handles everything needed to get the ARM assembly se
 
 ---
 
-## 🎯 **Project Status: FULLY FUNCTIONAL + AI INTEGRATION PHASE**
+## 🎯 **Project Status: REAL-TIME BIDIRECTIONAL AI CHAT CLIENT**
 
 ### 📖 **Project Origin**
 This project creates a native ARM assembly program that simulates Acorn computer communication over serial port, leveraging the shared ARM architecture between Raspberry Pi and Acorn computers for cross-platform compatibility. The assembly approach provides maximum performance with direct hardware control, educational value for low-level programming, and an authentic experience closer to original Acorn software development.
@@ -23,31 +23,41 @@ This project creates a native ARM assembly program that simulates Acorn computer
 ### ✅ **Phase 1: COMPLETED - ARM Assembly Serial Communication**
 Professional ARM assembly program with dual Raspberry Pi serial communication successfully implemented and tested.
 
-### 🚀 **Phase 2: IN PROGRESS - TinyLLM AI Integration**
-Extending the serial communication system to integrate with TinyLLM for AI-powered message processing.
+### ✅ **Phase 2: COMPLETED - Real-Time Bidirectional Communication**
+Fork-based architecture enabling simultaneous message sending and real-time AI response display.
+
+### 🚀 **Phase 3: IN PROGRESS - Response Format Cleanup**
+Cleaning AI response formatting to remove protocol markers and improve readability.
 
 ---
 
 ## 📋 **Current System Overview**
 
-### **Dual Pi Architecture**
+### **Real-Time Bidirectional Architecture**
 ```
 ┌─────────────────┐    USB Serial   ┌─────────────────┐
-│   SENDER PI     │     Cable       │   RECEIVER PI   │
-│                 │ ──────────────▶ │                 │
-│ ARM Assembly    │  /dev/ttyUSB0   │ Serial Monitor  │
-│ Program         │   9600 baud     │ Scripts         │
+│   CLIENT PI     │     Cable       │   SERVER PI     │
+│                 │ ◀────────────▶ │                 │
+│ ARM Assembly    │  /dev/ttyUSB0   │ Python AI       │
+│ Chat Client     │   9600 baud     │ Server          │
 │                 │                 │                 │
-│ • Menu System   │                 │ • Data Capture  │
-│ • Test Messages │                 │ • Logging       │
-│ • Custom Input  │                 │ • Validation    │
-│ • Continuous    │                 │ • Diagnostics   │
+│ Parent Process: │                 │ • AI Processing │
+│ • User Input    │                 │ • Message Gen   │
+│ • Send Messages │                 │ • Response Send │
+│                 │                 │                 │
+│ Child Process:  │                 │                 │
+│ • Listen Port   │                 │                 │
+│ • Display Resp  │                 │                 │
+│ • Real-Time     │                 │                 │
 └─────────────────┘                 └─────────────────┘
 ```
 
 ### **✅ Verified Working Features**
-- **ARM Assembly Program**: Full menu-driven interface with 4 options (ALL WORKING)
-- **Serial Communication**: Real hardware transmission via USB cable
+- **Fork-Based Architecture**: Parent process for user I/O, child for listening
+- **Real-Time Response Display**: AI responses appear immediately upon receipt
+- **Bidirectional Communication**: Full duplex serial communication
+- **Non-Blocking Interface**: Type while receiving responses simultaneously
+- **ChatGPT-Style Interaction**: Natural conversation flow with AI
 - **Message Types**: Test messages, continuous data, custom user input (FIXED)
 - **Interactive Menu**: Complete user input handling with proper line consumption
 - **Error Handling**: Robust fallback mechanisms and logging
@@ -238,14 +248,33 @@ make test         # Run program
 
 ---
 
+## 🛠️ **Known Issues & Next Steps**
+
+### **Current Response Format Issues**
+```
+[RESPONSE] AI: Sure, happy to assist you!
+[RESPONSE] 
+[RESPONSE] User: Can you help me?
+[RESPONSE] 
+[RESPONSE] Assistant: Of course! I'm here to help.
+[RESPONSE] <<<END>>>
+```
+
+### **Planned Improvements**
+1. **Response Cleanup**: Remove `[RESPONSE]` prefix from each line
+2. **Protocol Removal**: Strip `<<<END>>>` end-of-message markers
+3. **Clean Display**: Show only the actual AI response content
+4. **Multi-line Handling**: Properly format multi-line responses
+5. **Stream Processing**: Handle partial messages gracefully
+
 ## 🔮 **Future Enhancements**
 
-### **AI Integration Roadmap**
-1. **TinyLLM Message Processing**: Forward serial messages to AI
-2. **Response Handling**: Capture and log AI responses
-3. **Bidirectional Communication**: Send AI responses back to sender
-4. **Interactive Mode**: Real-time conversation through serial link
-5. **Context Management**: Track conversation history and context
+### **Message Processing Pipeline**
+1. **Protocol Parser**: Intelligent parsing of response format
+2. **Message Buffer**: Accumulate complete messages before display
+3. **Format Detection**: Auto-detect and handle different response formats
+4. **Error Recovery**: Handle incomplete or malformed messages
+5. **Performance Optimization**: Efficient string processing in ARM assembly
 
 ### **Advanced Features**
 - **Multiple LLM Support**: Integration with different AI models
