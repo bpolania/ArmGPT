@@ -485,7 +485,7 @@ test_success:
     mov r7, #SYS_WRITE
     swi 0
     
-    b chat_loop
+    b parent_chat_loop
 
 @ Send continuous data function
 send_continuous:
@@ -549,7 +549,7 @@ delay_loop:
     cmp r5, #10  @ Send 10 messages then stop
     blt continuous_loop
     
-    b chat_loop
+    b parent_chat_loop
 
 @ Send custom message function
 send_custom:
@@ -645,7 +645,7 @@ custom_empty_input:
     mov r2, #error_len
     mov r7, #SYS_WRITE
     swi 0
-    b chat_loop
+    b parent_chat_loop
 
 custom_serial_unavailable:
     @ Simulate successful send when serial unavailable
@@ -659,7 +659,7 @@ custom_success:
     mov r7, #SYS_WRITE
     swi 0
     
-    b chat_loop
+    b parent_chat_loop
 
 @ Send priming message to AI function
 send_priming_message:
@@ -913,7 +913,7 @@ send_error:
     mov r2, #error_len
     mov r7, #SYS_WRITE
     swi 0
-    b chat_loop
+    b parent_chat_loop
 
 @ Clean exit function
 exit_program:
