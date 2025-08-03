@@ -1,6 +1,6 @@
-# ArmGPT - Serial LLM Interface for Raspberry Pi
+# ArmGPT - Friendly AI Assistant for Acorn Computers
 
-A lightweight Python program that enables Raspberry Pi to listen to serial port messages, process them through a local LLM, and send responses back via serial communication.
+ArmGPT is a gentle and amicable AI assistant that connects to Acorn computers via serial port. Running on a Raspberry Pi, it provides friendly, knowledgeable responses to Acorn computer enthusiasts.
 
 ## Overview
 
