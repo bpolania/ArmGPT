@@ -56,8 +56,9 @@ class SerialLLMInterface:
         self.arm_history = self.load_arm_history()
         self.history_keywords = [
             'history', 'arm', 'acorn', 'sophie wilson', 'steve furber',
-            'archimedes', 'risc', 'origin', 'created', 'founded',
-            'when was', 'who made', 'tell me about', 'story'
+            'archimedes', 'a310', 'a305', 'a410', 'a440', 'risc', 'origin', 
+            'created', 'founded', 'when was', 'who made', 'tell me about', 
+            'story', 'first risc', 'world first', 'risc os', 'arthur os'
         ]
     
     def load_arm_history(self) -> Dict[str, str]:
@@ -98,7 +99,17 @@ class SerialLLMInterface:
             return ""
         
         # Prioritize sections based on keywords
-        if any(word in message_lower for word in ['origin', 'created', 'founded', 'began', 'start']):
+        if any(word in message_lower for word in ['archimedes', 'a310', 'a305', 'a410', 'a440', 'first risc', 'world first']):
+            if 'Origins at Acorn Computers (1983-1990)' in self.arm_history:
+                # Find the Archimedes section specifically
+                section = self.arm_history['Origins at Acorn Computers (1983-1990)']
+                archimedes_start = section.find('### The Archimedes Computer: World\'s First RISC Home Computer')
+                if archimedes_start != -1:
+                    relevant_sections.append(section[archimedes_start:archimedes_start+1500])
+                else:
+                    relevant_sections.append(section[:800])
+        
+        if any(word in message_lower for word in ['origin', 'created', 'founded', 'began', 'start']) and 'archimedes' not in message_lower:
             if 'Origins at Acorn Computers (1983-1990)' in self.arm_history:
                 relevant_sections.append(self.arm_history['Origins at Acorn Computers (1983-1990)'][:800])
         
