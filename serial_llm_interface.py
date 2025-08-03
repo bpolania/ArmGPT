@@ -9,11 +9,12 @@ import time
 import logging
 import sys
 import json
-from typing import Optional
+from typing import Optional, Dict
 import torch
 from transformers import AutoTokenizer, AutoModelForCausalLM
 from datetime import datetime
 import os
+import re
 
 # Create logs directory if it doesn't exist
 log_dir = 'logs'
@@ -52,6 +53,79 @@ class SerialLLMInterface:
         self.serial_conn = None
         self.tokenizer = None
         self.model = None
+        self.arm_history = self.load_arm_history()
+        self.history_keywords = [
+            'history', 'arm', 'acorn', 'sophie wilson', 'steve furber',
+            'archimedes', 'risc', 'origin', 'created', 'founded',
+            'when was', 'who made', 'tell me about', 'story'
+        ]
+    
+    def load_arm_history(self) -> Dict[str, str]:
+        """Load ARM history document and parse into sections"""
+        history = {}
+        try:
+            history_file = 'ARM_HISTORY.md'
+            if os.path.exists(history_file):
+                with open(history_file, 'r', encoding='utf-8') as f:
+                    content = f.read()
+                    
+                # Parse sections
+                sections = re.split(r'^##\s+', content, flags=re.MULTILINE)
+                for section in sections:
+                    if section.strip():
+                        lines = section.strip().split('\n')
+                        if lines:
+                            title = lines[0].strip()
+                            body = '\n'.join(lines[1:]).strip()
+                            history[title] = body
+                            
+                logger.info(f"Loaded ARM history with {len(history)} sections")
+            else:
+                logger.warning("ARM_HISTORY.md not found")
+        except Exception as e:
+            logger.error(f"Error loading ARM history: {e}")
+        return history
+    
+    def get_relevant_history(self, message: str) -> str:
+        """Get relevant ARM history sections based on the user's message"""
+        message_lower = message.lower()
+        relevant_sections = []
+        
+        # Check if the message is about history
+        is_history_query = any(keyword in message_lower for keyword in self.history_keywords)
+        
+        if not is_history_query:
+            return ""
+        
+        # Prioritize sections based on keywords
+        if any(word in message_lower for word in ['origin', 'created', 'founded', 'began', 'start']):
+            if 'Origins at Acorn Computers (1983-1990)' in self.arm_history:
+                relevant_sections.append(self.arm_history['Origins at Acorn Computers (1983-1990)'][:800])
+        
+        if any(word in message_lower for word in ['sophie wilson', 'steve furber', 'inventor', 'creator']):
+            if 'Origins at Acorn Computers (1983-1990)' in self.arm_history:
+                relevant_sections.append(self.arm_history['Origins at Acorn Computers (1983-1990)'][:800])
+        
+        if 'connection' in message_lower or 'armgpt' in message_lower:
+            if "ARM's Connection to ArmGPT" in self.arm_history:
+                relevant_sections.append(self.arm_history["ARM's Connection to ArmGPT"])
+        
+        if any(word in message_lower for word in ['business', 'model', 'license', 'licensing']):
+            if 'The ARM Business Model' in self.arm_history:
+                relevant_sections.append(self.arm_history['The ARM Business Model'][:800])
+        
+        if any(word in message_lower for word in ['technical', 'architecture', 'processor']):
+            if 'Technical Evolution' in self.arm_history:
+                relevant_sections.append(self.arm_history['Technical Evolution'][:800])
+        
+        # If no specific sections matched, provide a brief overview
+        if not relevant_sections and is_history_query:
+            overview = "ARM was created at Acorn Computers in 1983 by Sophie Wilson and Steve Furber. "
+            overview += "Originally standing for Acorn RISC Machine, it powered the Acorn Archimedes. "
+            overview += "In 1990, ARM became a separate company. Today, ARM processors are in billions of devices worldwide."
+            relevant_sections.append(overview)
+        
+        return "\n\n".join(relevant_sections) if relevant_sections else ""
         
     def init_serial(self):
         """Initialize serial connection"""
@@ -93,7 +167,7 @@ class SerialLLMInterface:
     def format_prompt(self, message: str) -> str:
         """Format the prompt for TinyLlama chat format"""
         # TinyLlama uses the same format as Llama-2-Chat
-        system_message = """You are ArmGPT, a friendly and knowledgeable AI assistant connected to an Acorn computer via serial port. You have a warm, gentle personality and enjoy helping Acorn enthusiasts with their computing needs.
+        base_system_message = """You are ArmGPT, a friendly and knowledgeable AI assistant connected to an Acorn computer via serial port. You have a warm, gentle personality and enjoy helping Acorn enthusiasts with their computing needs.
 
 Key traits:
 - Always introduce yourself as ArmGPT when greeting users
@@ -103,15 +177,16 @@ Key traits:
 - Show interest in what the user is working on
 - If asked about yourself, mention you're running on a Raspberry Pi connected to their Acorn
 
-IMPORTANT - When asked about ARM history or ArmGPT's connection to ARM:
-- You have deep knowledge of ARM's history from its origins at Acorn Computers in 1983
-- ARM (originally Acorn RISC Machine) was created by Sophie Wilson and Steve Furber
-- The ARM processor powered the Acorn Archimedes and later became the world's most used processor architecture
-- ArmGPT honors this legacy by bringing ARM-powered AI (via Raspberry Pi) back to Acorn computers
-- Share interesting facts about ARM's journey from Acorn to powering billions of devices worldwide
-- Emphasize the connection: Acorn created ARM, and now ARM powers the AI that helps Acorn users
-
-Remember: You're not generic customer support - you're ArmGPT, a specialized companion for Acorn computer users with deep knowledge of ARM's heritage!"""
+Remember: You're not generic customer support - you're ArmGPT, a specialized companion for Acorn computer users!"""
+        
+        # Get relevant history if the message is about ARM/history
+        relevant_history = self.get_relevant_history(message)
+        
+        if relevant_history:
+            system_message = base_system_message + f"\n\nRelevant ARM History Information:\n{relevant_history}\n\nUse this information to provide accurate, detailed responses about ARM's history and ArmGPT's connection to it."
+        else:
+            system_message = base_system_message
+        
         prompt = f"<|system|>\n{system_message}</s>\n<|user|>\n{message}</s>\n<|assistant|>\n"
         return prompt
     
