@@ -15,7 +15,9 @@ A lightweight Python program that enables Raspberry Pi to listen to serial port 
 - Listens on serial0 port (configurable)
 - Processes messages through local TinyLlama model
 - Sends AI-generated responses back via serial
-- Robust error handling and logging
+- Robust error handling with comprehensive logging
+- Automatic log file creation with timestamps
+- Session summary with message and error counts
 - Configurable baud rate and port settings
 
 ## Quick Start

@@ -11,13 +11,26 @@ import sys
 import json
 from typing import Optional
 from llama_cpp import Llama
+from datetime import datetime
+import os
 
-# Configure logging
+# Create logs directory if it doesn't exist
+log_dir = 'logs'
+if not os.path.exists(log_dir):
+    os.makedirs(log_dir)
+
+# Configure logging to both console and file
+log_filename = os.path.join(log_dir, f'serial_llm_{datetime.now().strftime("%Y%m%d_%H%M%S")}.log')
 logging.basicConfig(
     level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.FileHandler(log_filename),
+        logging.StreamHandler(sys.stdout)
+    ]
 )
 logger = logging.getLogger(__name__)
+logger.info(f"Logging to file: {log_filename}")
 
 class SerialLLMInterfaceLite:
     def __init__(self, 
@@ -133,6 +146,14 @@ class SerialLLMInterfaceLite:
     
     def run(self):
         """Main loop for the serial LLM interface"""
+        # Log startup information
+        logger.info("="*60)
+        logger.info("Starting Serial LLM Interface")
+        logger.info(f"Port: {self.port}")
+        logger.info(f"Baudrate: {self.baudrate}")
+        logger.info(f"Model: {self.model_path}")
+        logger.info("="*60)
+        
         # Initialize components
         if not self.init_serial():
             logger.error("Failed to initialize serial port")
@@ -145,15 +166,25 @@ class SerialLLMInterfaceLite:
         logger.info("Lightweight Serial LLM Interface ready. Listening for messages...")
         logger.info(f"Press Ctrl+C to exit")
         
+        message_count = 0
+        error_count = 0
+        
         try:
             while True:
                 # Read message from serial
                 message = self.read_serial_message()
                 
                 if message:
+                    message_count += 1
+                    logger.info(f"Message #{message_count}")
+                    
                     # Generate response
                     logger.info("Generating response...")
                     response = self.generate_response(message)
+                    
+                    if response.startswith("Error:"):
+                        error_count += 1
+                        logger.error(f"Error count: {error_count}")
                     
                     # Send response back
                     self.send_serial_response(response)
@@ -164,8 +195,17 @@ class SerialLLMInterfaceLite:
         except KeyboardInterrupt:
             logger.info("Shutting down...")
         except Exception as e:
-            logger.error(f"Unexpected error: {e}")
+            logger.error(f"Unexpected error: {e}", exc_info=True)
+            error_count += 1
         finally:
+            # Log session summary
+            logger.info("="*60)
+            logger.info("Session Summary")
+            logger.info(f"Total messages processed: {message_count}")
+            logger.info(f"Total errors: {error_count}")
+            logger.info(f"Log file: {log_filename}")
+            logger.info("="*60)
+            
             if self.serial_conn and self.serial_conn.is_open:
                 self.serial_conn.close()
                 logger.info("Serial port closed")

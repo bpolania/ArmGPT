@@ -61,3 +61,22 @@ core.*
 
 # Generated files
 src/main_mac_x64.s
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+ENV/
+
+# Machine Learning Models
+models/
+*.gguf
+*.bin
+*.safetensors
+
+# Logs directory (but keep individual *.log pattern above)
+logs/

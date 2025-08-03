@@ -93,6 +93,15 @@ For full version, edit the main() function in the script.
 2. Run the program
 3. Send messages via serial (terminated with newline)
 4. Receive AI responses back through serial
+5. Check logs in the `logs/` directory for debugging
+
+## Logging
+
+Both versions automatically create timestamped log files in the `logs/` directory:
+- Log files are named: `serial_llm_YYYYMMDD_HHMMSS.log`
+- Logs include all messages, responses, errors, and session statistics
+- Logs are written to both console and file simultaneously
+- Session summary shows total messages processed and error count
 
 ## Troubleshooting
 
