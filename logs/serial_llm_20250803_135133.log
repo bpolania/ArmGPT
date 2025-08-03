@@ -1,0 +1,13 @@
+2025-08-03 13:51:33,811 - __main__ - INFO - Logging to file: logs/serial_llm_20250803_135133.log
+2025-08-03 13:51:33,816 - __main__ - INFO - ============================================================
+2025-08-03 13:51:33,816 - __main__ - INFO - Starting Serial LLM Interface
+2025-08-03 13:51:33,816 - __main__ - INFO - Port: /dev/serial0
+2025-08-03 13:51:33,816 - __main__ - INFO - Baudrate: 115200
+2025-08-03 13:51:33,816 - __main__ - INFO - Model: models/tinyllama
+2025-08-03 13:51:33,816 - __main__ - INFO - ============================================================
+2025-08-03 13:51:33,816 - __main__ - INFO - Serial port /dev/serial0 opened successfully at 115200 baud
+2025-08-03 13:51:33,816 - __main__ - INFO - Loading quantized model: models/tinyllama
+2025-08-03 13:51:33,817 - __main__ - INFO - This may take a moment...
+2025-08-03 13:51:33,820 - __main__ - ERROR - Failed to load LLM model: Model path does not exist: models/tinyllama
+2025-08-03 13:51:33,820 - __main__ - ERROR - Make sure you have downloaded the quantized model file
+2025-08-03 13:51:33,820 - __main__ - ERROR - Failed to initialize LLM
