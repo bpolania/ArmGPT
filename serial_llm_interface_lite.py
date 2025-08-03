@@ -231,10 +231,16 @@ Remember: You're not generic customer support - you're ArmGPT, a specialized com
                 # Read until newline or timeout
                 message = self.serial_conn.readline().decode('utf-8').strip()
                 if message:
+                    # Log to both file and prominently display on screen
                     logger.info(f"Received: {message}")
+                    print(f"\n{'='*60}")
+                    print(f"📨 MESSAGE FROM ACORN A310:")
+                    print(f"    {message}")
+                    print(f"{'='*60}")
                     return message
         except Exception as e:
             logger.error(f"Error reading serial: {e}")
+            print(f"❌ Serial read error: {e}")
         return None
     
     def send_serial_response(self, response: str):
@@ -245,8 +251,13 @@ Remember: You're not generic customer support - you're ArmGPT, a specialized com
             self.serial_conn.write(response_bytes)
             self.serial_conn.flush()
             logger.info(f"Sent: {response}")
+            # Display response prominently on screen
+            print(f"\n🤖 ARMGPT RESPONSE TO ACORN:")
+            print(f"    {response}")
+            print(f"{'─'*60}\n")
         except Exception as e:
             logger.error(f"Error sending response: {e}")
+            print(f"❌ Serial send error: {e}")
     
     def run(self):
         """Main loop for the serial LLM interface"""
@@ -269,6 +280,15 @@ Remember: You're not generic customer support - you're ArmGPT, a specialized com
         
         logger.info("Lightweight Serial LLM Interface ready. Listening for messages...")
         logger.info(f"Press Ctrl+C to exit")
+        
+        # Display prominent startup message on screen
+        print(f"\n🚀 ArmGPT is ready and listening for your Acorn A310!")
+        print(f"📡 Serial port: {self.port} at {self.baudrate} baud")
+        print(f"🧠 Model: {self.model_path}")
+        print(f"💾 Logs: {log_filename}")
+        print(f"\n{'='*60}")
+        print(f"  Waiting for messages from Acorn Archimedes A310...")
+        print(f"{'='*60}\n")
         
         message_count = 0
         error_count = 0
