@@ -14,6 +14,9 @@ from llama_cpp import Llama
 from datetime import datetime
 import os
 import re
+import requests
+import socket
+from openai import OpenAI
 
 # Create logs directory if it doesn't exist
 log_dir = 'logs'
@@ -37,7 +40,8 @@ class SerialLLMInterfaceLite:
     def __init__(self, 
                  port='/dev/serial0',
                  baudrate=9600,
-                 model_path='tinyllama-1.1b-chat-v1.0.Q4_K_M.gguf'):
+                 model_path='tinyllama-1.1b-chat-v1.0.Q4_K_M.gguf',
+                 openai_api_key=None):
         """
         Initialize the Lightweight Serial LLM Interface
         
@@ -45,14 +49,26 @@ class SerialLLMInterfaceLite:
             port: Serial port to use (default: /dev/serial0 for Raspberry Pi)
             baudrate: Baud rate for serial communication
             model_path: Path to quantized GGUF model file
+            openai_api_key: OpenAI API key for ChatGPT integration
         """
         self.port = port
         self.baudrate = baudrate
         self.model_path = model_path
         self.serial_conn = None
         self.llm = None
+        self.openai_client = None
+        self.internet_available = False
         self.arm_history = self.load_arm_history()
         self.processing = False  # Flag to track if we're processing a message
+        
+        # Initialize OpenAI client if API key provided
+        if openai_api_key or os.getenv('OPENAI_API_KEY'):
+            try:
+                self.openai_client = OpenAI(api_key=openai_api_key or os.getenv('OPENAI_API_KEY'))
+                logger.info("OpenAI client initialized successfully")
+            except Exception as e:
+                logger.warning(f"Failed to initialize OpenAI client: {e}")
+        
         self.history_keywords = [
             'history', 'arm', 'acorn', 'sophie wilson', 'steve furber',
             'archimedes', 'a310', 'a305', 'a410', 'a440', 'risc', 'origin', 
@@ -136,6 +152,58 @@ class SerialLLMInterfaceLite:
             relevant_sections.append(overview)
         
         return "\n\n".join(relevant_sections) if relevant_sections else ""
+    
+    def check_internet_connectivity(self) -> bool:
+        """Check if internet is available"""
+        try:
+            # Try to connect to OpenAI's API endpoint
+            socket.create_connection(("api.openai.com", 443), timeout=3)
+            return True
+        except (socket.error, socket.timeout):
+            try:
+                # Fallback: try Google DNS
+                socket.create_connection(("8.8.8.8", 53), timeout=3)
+                return True
+            except (socket.error, socket.timeout):
+                return False
+    
+    def generate_chatgpt_response(self, message: str) -> str:
+        """Generate response using ChatGPT API"""
+        try:
+            # Get relevant ARM history for context
+            relevant_history = self.get_relevant_history(message)
+            
+            # Build system message with ArmGPT personality and history context
+            system_message = """You are ArmGPT, a friendly and knowledgeable AI assistant connected to an Acorn computer via serial port. You have a warm, gentle personality and enjoy helping Acorn enthusiasts with their computing needs.
+
+Key traits:
+- Always introduce yourself as ArmGPT when greeting users
+- Be enthusiastic about retro computing and Acorn computers
+- Keep responses concise but informative
+- Use a conversational, amicable tone
+- Show interest in what the user is working on
+- You're running on a Raspberry Pi connected to their Acorn
+
+Remember: You're not generic customer support - you're ArmGPT, a specialized companion for Acorn computer users!"""
+
+            if relevant_history:
+                system_message += f"\n\nRelevant ARM History Information:\n{relevant_history}\n\nUse this information to provide accurate, detailed responses about ARM's history and ArmGPT's connection to it."
+
+            response = self.openai_client.chat.completions.create(
+                model="gpt-3.5-turbo",
+                messages=[
+                    {"role": "system", "content": system_message},
+                    {"role": "user", "content": message}
+                ],
+                max_tokens=500,
+                temperature=0.7
+            )
+            
+            return response.choices[0].message.content.strip()
+            
+        except Exception as e:
+            logger.error(f"ChatGPT API error: {e}")
+            return None
         
     def init_serial(self):
         """Initialize serial connection"""
@@ -215,14 +283,42 @@ Remember: You're not generic customer support - you're ArmGPT, a specialized com
         return prompt
     
     def generate_response(self, message: str) -> str:
-        """Generate a response using the LLM"""
+        """Generate a response using ChatGPT (online) or TinyLlama (offline)"""
+        # Start timing
+        start_time = time.time()
+        
+        # Check internet connectivity
+        self.internet_available = self.check_internet_connectivity()
+        
         try:
-            # Format the prompt
-            prompt = self.format_prompt(message)
+            if self.internet_available and self.openai_client:
+                # Use ChatGPT API
+                logger.info("Response generation started (ChatGPT API)")
+                print("🌐 Using ChatGPT API (online)")
+                
+                response = self.generate_chatgpt_response(message)
+                
+                if response is not None:
+                    # Calculate and log generation time
+                    end_time = time.time()
+                    generation_time = end_time - start_time
+                    logger.info(f"ChatGPT response completed in {generation_time:.2f} seconds")
+                    print(f"⏱️  ChatGPT generation time: {generation_time:.2f} seconds")
+                    return response
+                else:
+                    logger.warning("ChatGPT API failed, falling back to local TinyLlama")
+                    print("⚠️  ChatGPT failed, using local TinyLlama")
             
-            # Start timing
-            start_time = time.time()
-            logger.info("Response generation started")
+            # Fall back to local TinyLlama
+            if not self.llm:
+                logger.error("Local TinyLlama not initialized and ChatGPT unavailable")
+                return "Error: No AI model available"
+                
+            logger.info("Response generation started (Local TinyLlama)")
+            print("🤖 Using local TinyLlama (offline)")
+            
+            # Format the prompt for TinyLlama
+            prompt = self.format_prompt(message)
             
             # Generate response with no token limit - let it complete naturally
             response = self.llm(
@@ -237,13 +333,13 @@ Remember: You're not generic customer support - you're ArmGPT, a specialized com
             # Calculate and log generation time
             end_time = time.time()
             generation_time = end_time - start_time
-            logger.info(f"Response generation completed in {generation_time:.2f} seconds")
-            print(f"⏱️  Generation time: {generation_time:.2f} seconds")
+            logger.info(f"TinyLlama response completed in {generation_time:.2f} seconds")
+            print(f"⏱️  TinyLlama generation time: {generation_time:.2f} seconds")
             
             # Extract the generated text
             generated_text = response['choices'][0]['text'].strip()
-            
             return generated_text
+            
         except Exception as e:
             # Log error with timing if we got this far
             if 'start_time' in locals():
@@ -358,13 +454,19 @@ Remember: You're not generic customer support - you're ArmGPT, a specialized com
         logger.info("Lightweight Serial LLM Interface ready. Listening for messages...")
         logger.info(f"Press Ctrl+C to exit")
         
+        # Check initial internet status
+        initial_internet = self.check_internet_connectivity()
+        
         # Display prominent startup message on screen
         print(f"\n🚀 ArmGPT is ready and listening for your Acorn A310!")
         print(f"📡 Serial port: {self.port} at {self.baudrate} baud")
-        print(f"🧠 Model: {self.model_path}")
+        print(f"🧠 Local model: {self.model_path}")
+        print(f"🌐 ChatGPT API: {'✅ Available' if self.openai_client and initial_internet else '❌ Unavailable'}")
+        print(f"📡 Internet: {'✅ Connected' if initial_internet else '❌ Offline'}")
         print(f"💾 Logs: {log_filename}")
         print(f"\n{'='*60}")
         print(f"  Waiting for messages from Acorn Archimedes A310...")
+        print(f"  Will use ChatGPT when online, TinyLlama when offline")
         print(f"{'='*60}\n")
         
         message_count = 0
@@ -423,18 +525,20 @@ def main():
     """Main entry point"""
     import argparse
     
-    parser = argparse.ArgumentParser(description='Lightweight Serial LLM Interface')
+    parser = argparse.ArgumentParser(description='Lightweight Serial LLM Interface with ChatGPT Integration')
     parser.add_argument('--port', default='/dev/serial0', help='Serial port')
     parser.add_argument('--baudrate', type=int, default=9600, help='Baud rate')
     parser.add_argument('--model', default='tinyllama-1.1b-chat-v1.0.Q4_K_M.gguf', 
                         help='Path to quantized GGUF model')
+    parser.add_argument('--openai-key', help='OpenAI API key (or set OPENAI_API_KEY env var)')
     
     args = parser.parse_args()
     
     interface = SerialLLMInterfaceLite(
         port=args.port,
         baudrate=args.baudrate,
-        model_path=args.model
+        model_path=args.model,
+        openai_api_key=args.openai_key
     )
     
     interface.run()

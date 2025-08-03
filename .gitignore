@@ -80,3 +80,7 @@ models/
 
 # Logs directory (commented out - we want to track logs)
 # logs/
+
+# Environment variables and API keys
+.env
+*.key

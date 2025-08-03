@@ -1,6 +1,6 @@
 # ArmGPT - Friendly AI Assistant for Acorn Computers
 
-ArmGPT is a gentle and amicable AI assistant that connects to Acorn computers via serial port. Running on a Raspberry Pi, it provides friendly, knowledgeable responses to Acorn computer enthusiasts.
+ArmGPT is a gentle and amicable AI assistant that connects to Acorn computers via serial port. Running on a Raspberry Pi, it provides intelligent responses using **ChatGPT when online** or **local TinyLlama when offline** - the best of both worlds!
 
 ## Overview
 
@@ -12,13 +12,15 @@ ArmGPT is a gentle and amicable AI assistant that connects to Acorn computers vi
 
 ## Key Features
 
+- **Hybrid AI System**: ChatGPT API when online, TinyLlama when offline
+- **Smart Fallback**: Automatically switches between online/offline modes
+- **Real-time Connectivity**: Checks internet status for each query
 - Listens on serial0 port (configurable)
-- Processes messages through local TinyLlama model
-- Sends AI-generated responses back via serial
 - Robust error handling with comprehensive logging
 - Automatic log file creation with timestamps
 - Session summary with message and error counts
 - Configurable baud rate and port settings
+- Response timing for performance monitoring
 
 ## Quick Start
 
@@ -30,10 +32,18 @@ source venv/bin/activate
 # Install dependencies
 pip install -r requirements-lite.txt
 
-# Download the quantized TinyLlama model
+# Download the quantized TinyLlama model (for offline use)
 ./download_model.sh
 
-# Run the interface
+# Set up OpenAI API key (for online ChatGPT - optional)
+cp .env.example .env
+# Edit .env and add your OpenAI API key
+
+# Run with ChatGPT integration
+python serial_llm_interface_lite.py --model models/tinyllama-1.1b-chat-v1.0.Q4_K_M.gguf --openai-key your_api_key
+
+# Or run with environment variable
+export OPENAI_API_KEY=your_api_key_here
 python serial_llm_interface_lite.py --model models/tinyllama-1.1b-chat-v1.0.Q4_K_M.gguf
 ```
 
