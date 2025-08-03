@@ -209,6 +209,10 @@ Remember: You're not generic customer support - you're ArmGPT, a specialized com
             # Format the prompt
             prompt = self.format_prompt(message)
             
+            # Start timing
+            start_time = time.time()
+            logger.info("Response generation started")
+            
             # Tokenize
             inputs = self.tokenizer(prompt, return_tensors="pt")
             
@@ -223,6 +227,12 @@ Remember: You're not generic customer support - you're ArmGPT, a specialized com
                     pad_token_id=self.tokenizer.eos_token_id
                 )
             
+            # Calculate and log generation time
+            end_time = time.time()
+            generation_time = end_time - start_time
+            logger.info(f"Response generation completed in {generation_time:.2f} seconds")
+            print(f"⏱️  Generation time: {generation_time:.2f} seconds")
+            
             # Decode the response
             response = self.tokenizer.decode(outputs[0], skip_special_tokens=True)
             
@@ -231,7 +241,14 @@ Remember: You're not generic customer support - you're ArmGPT, a specialized com
             
             return response
         except Exception as e:
-            logger.error(f"Error generating response: {e}")
+            # Log error with timing if we got this far
+            if 'start_time' in locals():
+                error_time = time.time() - start_time
+                logger.error(f"Error generating response after {error_time:.2f} seconds: {e}")
+                print(f"❌ Error after {error_time:.2f} seconds: {e}")
+            else:
+                logger.error(f"Error generating response: {e}")
+                print(f"❌ Error: {e}")
             return "Error: Unable to generate response"
     
     def read_serial_message(self) -> Optional[str]:
