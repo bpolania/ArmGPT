@@ -1,0 +1,2 @@
+pyserial==3.5
+llama-cpp-python==0.2.32

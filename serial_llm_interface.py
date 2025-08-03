@@ -1,0 +1,193 @@
+#!/usr/bin/env python3
+"""
+Serial LLM Interface for Raspberry Pi
+Listens to serial0 port, processes messages through a local LLM, and responds back
+"""
+
+import serial
+import time
+import logging
+import sys
+import json
+from typing import Optional
+import torch
+from transformers import AutoTokenizer, AutoModelForCausalLM
+
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger(__name__)
+
+class SerialLLMInterface:
+    def __init__(self, 
+                 port='/dev/serial0',
+                 baudrate=115200,
+                 model_name='TinyLlama/TinyLlama-1.1B-Chat-v1.0'):
+        """
+        Initialize the Serial LLM Interface
+        
+        Args:
+            port: Serial port to use (default: /dev/serial0 for Raspberry Pi)
+            baudrate: Baud rate for serial communication
+            model_name: Hugging Face model to use
+        """
+        self.port = port
+        self.baudrate = baudrate
+        self.model_name = model_name
+        self.serial_conn = None
+        self.tokenizer = None
+        self.model = None
+        
+    def init_serial(self):
+        """Initialize serial connection"""
+        try:
+            self.serial_conn = serial.Serial(
+                port=self.port,
+                baudrate=self.baudrate,
+                timeout=0.1,
+                bytesize=serial.EIGHTBITS,
+                parity=serial.PARITY_NONE,
+                stopbits=serial.STOPBITS_ONE
+            )
+            logger.info(f"Serial port {self.port} opened successfully at {self.baudrate} baud")
+            return True
+        except serial.SerialException as e:
+            logger.error(f"Failed to open serial port: {e}")
+            return False
+            
+    def init_llm(self):
+        """Initialize the LLM model"""
+        try:
+            logger.info(f"Loading model: {self.model_name}")
+            logger.info("This may take a few minutes on first run...")
+            
+            # Load tokenizer and model
+            self.tokenizer = AutoTokenizer.from_pretrained(self.model_name)
+            self.model = AutoModelForCausalLM.from_pretrained(
+                self.model_name,
+                torch_dtype=torch.float16,  # Use half precision for memory efficiency
+                device_map="auto"
+            )
+            
+            logger.info("Model loaded successfully")
+            return True
+        except Exception as e:
+            logger.error(f"Failed to load LLM model: {e}")
+            return False
+    
+    def format_prompt(self, message: str) -> str:
+        """Format the prompt for TinyLlama chat format"""
+        # TinyLlama uses the same format as Llama-2-Chat
+        system_message = "You are a helpful AI assistant responding to messages from a serial port."
+        prompt = f"<|system|>\n{system_message}</s>\n<|user|>\n{message}</s>\n<|assistant|>\n"
+        return prompt
+    
+    def generate_response(self, message: str) -> str:
+        """Generate a response using the LLM"""
+        try:
+            # Format the prompt
+            prompt = self.format_prompt(message)
+            
+            # Tokenize
+            inputs = self.tokenizer(prompt, return_tensors="pt")
+            
+            # Generate response
+            with torch.no_grad():
+                outputs = self.model.generate(
+                    **inputs,
+                    max_new_tokens=100,
+                    temperature=0.7,
+                    do_sample=True,
+                    top_p=0.95,
+                    pad_token_id=self.tokenizer.eos_token_id
+                )
+            
+            # Decode the response
+            response = self.tokenizer.decode(outputs[0], skip_special_tokens=True)
+            
+            # Extract only the assistant's response
+            response = response.split("<|assistant|>")[-1].strip()
+            
+            return response
+        except Exception as e:
+            logger.error(f"Error generating response: {e}")
+            return "Error: Unable to generate response"
+    
+    def read_serial_message(self) -> Optional[str]:
+        """Read a complete message from serial port"""
+        try:
+            if self.serial_conn.in_waiting > 0:
+                # Read until newline or timeout
+                message = self.serial_conn.readline().decode('utf-8').strip()
+                if message:
+                    logger.info(f"Received: {message}")
+                    return message
+        except Exception as e:
+            logger.error(f"Error reading serial: {e}")
+        return None
+    
+    def send_serial_response(self, response: str):
+        """Send response back through serial port"""
+        try:
+            # Add newline for proper message termination
+            response_bytes = (response + '\n').encode('utf-8')
+            self.serial_conn.write(response_bytes)
+            self.serial_conn.flush()
+            logger.info(f"Sent: {response}")
+        except Exception as e:
+            logger.error(f"Error sending response: {e}")
+    
+    def run(self):
+        """Main loop for the serial LLM interface"""
+        # Initialize components
+        if not self.init_serial():
+            logger.error("Failed to initialize serial port")
+            return
+        
+        if not self.init_llm():
+            logger.error("Failed to initialize LLM")
+            return
+        
+        logger.info("Serial LLM Interface ready. Listening for messages...")
+        logger.info(f"Press Ctrl+C to exit")
+        
+        try:
+            while True:
+                # Read message from serial
+                message = self.read_serial_message()
+                
+                if message:
+                    # Generate response
+                    logger.info("Generating response...")
+                    response = self.generate_response(message)
+                    
+                    # Send response back
+                    self.send_serial_response(response)
+                
+                # Small delay to prevent CPU overuse
+                time.sleep(0.01)
+                
+        except KeyboardInterrupt:
+            logger.info("Shutting down...")
+        except Exception as e:
+            logger.error(f"Unexpected error: {e}")
+        finally:
+            if self.serial_conn and self.serial_conn.is_open:
+                self.serial_conn.close()
+                logger.info("Serial port closed")
+
+def main():
+    """Main entry point"""
+    # You can customize these parameters
+    interface = SerialLLMInterface(
+        port='/dev/serial0',  # Default Raspberry Pi serial port
+        baudrate=115200,      # Match this with your other device
+        model_name='TinyLlama/TinyLlama-1.1B-Chat-v1.0'  # Optimized for RPi
+    )
+    
+    interface.run()
+
+if __name__ == "__main__":
+    main()
