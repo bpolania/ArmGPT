@@ -13,4 +13,5 @@ wget -O models/tinyllama-1.1b-chat-v1.0.Q4_K_M.gguf \
 
 echo "Model downloaded to models/tinyllama-1.1b-chat-v1.0.Q4_K_M.gguf"
 echo "You can now run the lightweight interface with:"
-echo "python3 serial_llm_interface_lite.py --model models/tinyllama-1.1b-chat-v1.0.Q4_K_M.gguf"
+echo "source venv/bin/activate"
+echo "python serial_llm_interface_lite.py --model models/tinyllama-1.1b-chat-v1.0.Q4_K_M.gguf"

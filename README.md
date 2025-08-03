@@ -21,14 +21,18 @@ A lightweight Python program that enables Raspberry Pi to listen to serial port 
 ## Quick Start
 
 ```bash
+# Create and activate virtual environment
+python3 -m venv venv
+source venv/bin/activate
+
 # Install dependencies
-pip3 install -r requirements-lite.txt
+pip install -r requirements-lite.txt
 
 # Download the quantized TinyLlama model
 ./download_model.sh
 
 # Run the interface
-python3 serial_llm_interface_lite.py --model models/tinyllama-1.1b-chat-v1.0.Q4_K_M.gguf
+python serial_llm_interface_lite.py --model models/tinyllama-1.1b-chat-v1.0.Q4_K_M.gguf
 ```
 
 ## Requirements
@@ -46,7 +50,7 @@ Default settings:
 
 Custom configuration:
 ```bash
-python3 serial_llm_interface_lite.py --port /dev/ttyUSB0 --baudrate 9600 --model path/to/model.gguf
+python serial_llm_interface_lite.py --port /dev/ttyUSB0 --baudrate 9600 --model path/to/model.gguf
 ```
 
 ## Why TinyLlama?

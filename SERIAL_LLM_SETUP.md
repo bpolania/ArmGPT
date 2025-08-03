@@ -20,11 +20,17 @@ This guide helps you set up a Python program that listens to the serial port, pr
 
 ### For Raspberry Pi (Recommended: Lite Version)
 
-1. **Install dependencies:**
+1. **Install system dependencies and create virtual environment:**
 ```bash
 sudo apt-get update
-sudo apt-get install python3-pip python3-dev
-pip3 install -r requirements-lite.txt
+sudo apt-get install python3-pip python3-dev python3-venv
+
+# Create and activate virtual environment
+python3 -m venv venv
+source venv/bin/activate
+
+# Install Python dependencies
+pip install -r requirements-lite.txt
 ```
 
 2. **Download the quantized model:**
@@ -44,19 +50,25 @@ sudo systemctl disable serial-getty@ttyS0.service
 
 4. **Run the program:**
 ```bash
-python3 serial_llm_interface_lite.py --model models/tinyllama-1.1b-chat-v1.0.Q4_K_M.gguf
+# Make sure virtual environment is activated
+source venv/bin/activate
+
+# Run the program
+python serial_llm_interface_lite.py --model models/tinyllama-1.1b-chat-v1.0.Q4_K_M.gguf
 ```
 
 ### For Systems with More RAM (Full Version)
 
-1. **Install dependencies:**
+1. **Create virtual environment and install dependencies:**
 ```bash
-pip3 install -r requirements.txt
+python3 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
 ```
 
 2. **Run the program:**
 ```bash
-python3 serial_llm_interface.py
+python serial_llm_interface.py
 ```
 
 ## Configuration
@@ -70,7 +82,7 @@ python3 serial_llm_interface.py
 
 For lite version:
 ```bash
-python3 serial_llm_interface_lite.py --port /dev/ttyUSB0 --baudrate 9600 --model path/to/model.gguf
+python serial_llm_interface_lite.py --port /dev/ttyUSB0 --baudrate 9600 --model path/to/model.gguf
 ```
 
 For full version, edit the main() function in the script.
@@ -118,7 +130,8 @@ Test without hardware using socat:
 socat -d -d pty,raw,echo=0 pty,raw,echo=0
 
 # Terminal 2 (use the first PTY path from socat):
-python3 serial_llm_interface_lite.py --port /dev/pts/X
+source venv/bin/activate
+python serial_llm_interface_lite.py --port /dev/pts/X
 
 # Terminal 3 (use the second PTY path):
 screen /dev/pts/Y 115200
