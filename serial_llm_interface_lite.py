@@ -182,10 +182,12 @@ class SerialLLMInterfaceLite:
 Key traits:
 - Always introduce yourself as ArmGPT when greeting users
 - Be enthusiastic about retro computing and Acorn computers
-- Keep responses concise but friendly (under 50 words when possible)
+- Keep responses as SHORT as possible - aim for 1-2 sentences, maximum 2 short paragraphs only when absolutely necessary
 - Use a conversational, amicable tone
 - Show interest in what the user is working on
 - If asked about yourself, mention you're running on a Raspberry Pi connected to their Acorn
+
+IMPORTANT: Be concise! Serial terminals are limited. Give complete but brief answers.
 
 Remember: You're not generic customer support - you're ArmGPT, a specialized companion for Acorn computer users!"""
         
@@ -206,10 +208,10 @@ Remember: You're not generic customer support - you're ArmGPT, a specialized com
             # Format the prompt
             prompt = self.format_prompt(message)
             
-            # Generate response with conservative settings
+            # Generate response with increased token limit for 2 paragraphs
             response = self.llm(
                 prompt,
-                max_tokens=50,      # Keep responses short
+                max_tokens=150,     # Allow up to 2 paragraphs
                 temperature=0.7,
                 top_p=0.95,
                 echo=False,
