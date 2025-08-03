@@ -230,16 +230,25 @@ Remember: You're not generic customer support - you're ArmGPT, a specialized com
         """Read a complete message from serial port"""
         try:
             if self.serial_conn.in_waiting > 0:
-                # Read until newline or timeout
-                message = self.serial_conn.readline().decode('utf-8').strip()
-                if message:
-                    # Log to both file and prominently display on screen
-                    logger.info(f"Received: {message}")
-                    print(f"\n{'='*60}")
-                    print(f"📨 MESSAGE FROM ACORN A310:")
-                    print(f"    {message}")
-                    print(f"{'='*60}")
-                    return message
+                # Read raw bytes first for debugging
+                raw_message = self.serial_conn.readline()
+                logger.info(f"Raw bytes received: {raw_message}")
+                
+                # Decode and clean the message
+                message = raw_message.decode('utf-8', errors='replace').strip()
+                
+                # Always show what we received, even if it appears empty
+                logger.info(f"Decoded message: '{message}' (length: {len(message)})")
+                print(f"\n{'='*60}")
+                print(f"📨 MESSAGE FROM ACORN A310:")
+                print(f"    Raw: {raw_message}")
+                print(f"    Decoded: '{message}' (length: {len(message)})")
+                print(f"{'='*60}")
+                
+                # Return message even if it appears empty (might be whitespace/control chars)
+                if len(raw_message) > 0:
+                    return message if message else " "  # Return space if message is empty string
+                    
         except Exception as e:
             logger.error(f"Error reading serial: {e}")
             print(f"❌ Serial read error: {e}")
