@@ -220,10 +220,10 @@ Remember: You're not generic customer support - you're ArmGPT, a specialized com
             # Format the prompt
             prompt = self.format_prompt(message)
             
-            # Generate response with increased token limit for 2 paragraphs
+            # Generate response with no token limit - let it complete naturally
             response = self.llm(
                 prompt,
-                max_tokens=150,     # Allow up to 2 paragraphs
+                max_tokens=-1,      # No limit - generate until natural stop
                 temperature=0.7,
                 top_p=0.95,
                 echo=False,

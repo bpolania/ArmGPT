@@ -212,11 +212,11 @@ Remember: You're not generic customer support - you're ArmGPT, a specialized com
             # Tokenize
             inputs = self.tokenizer(prompt, return_tensors="pt")
             
-            # Generate response with increased token limit for 2 paragraphs
+            # Generate response with high token limit - let it complete naturally
             with torch.no_grad():
                 outputs = self.model.generate(
                     **inputs,
-                    max_new_tokens=200,  # Allow up to 2 paragraphs
+                    max_new_tokens=500,  # High limit for complete responses
                     temperature=0.7,
                     do_sample=True,
                     top_p=0.95,
