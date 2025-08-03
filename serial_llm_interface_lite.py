@@ -139,18 +139,26 @@ class SerialLLMInterfaceLite:
     def init_serial(self):
         """Initialize serial connection"""
         try:
-            self.serial_conn = serial.Serial(
-                port=self.port,
-                baudrate=self.baudrate,
-                timeout=1.0,  # Increased timeout
-                bytesize=serial.EIGHTBITS,
-                parity=serial.PARITY_NONE,
-                stopbits=serial.STOPBITS_ONE,
-                xonxoff=False,  # Disable software flow control
-                rtscts=False,   # Disable hardware flow control
-                dsrdtr=False    # Disable DSR/DTR flow control
-            )
+            self.serial_conn = serial.Serial()
+            self.serial_conn.port = self.port
+            self.serial_conn.baudrate = self.baudrate
+            self.serial_conn.bytesize = serial.EIGHTBITS
+            self.serial_conn.parity = serial.PARITY_NONE
+            self.serial_conn.stopbits = serial.STOPBITS_ONE
+            self.serial_conn.timeout = 2.0
+            self.serial_conn.xonxoff = False
+            self.serial_conn.rtscts = False
+            self.serial_conn.dsrdtr = False
+            
+            # Open and immediately flush buffers
+            self.serial_conn.open()
+            time.sleep(0.1)  # Give it a moment
+            self.serial_conn.flushInput()
+            self.serial_conn.flushOutput()
+            time.sleep(0.1)
+            
             logger.info(f"Serial port {self.port} opened successfully at {self.baudrate} baud")
+            logger.info(f"DTR: {self.serial_conn.dtr}, RTS: {self.serial_conn.rts}")
             return True
         except serial.SerialException as e:
             logger.error(f"Failed to open serial port: {e}")
@@ -232,37 +240,54 @@ Remember: You're not generic customer support - you're ArmGPT, a specialized com
     def read_serial_message(self) -> Optional[str]:
         """Read a complete message from serial port"""
         try:
-            if self.serial_conn.in_waiting > 0:
-                # Read raw bytes first for debugging
-                raw_message = self.serial_conn.readline()
-                logger.info(f"Raw bytes received: {raw_message}")
-                logger.info(f"Raw bytes hex: {raw_message.hex()}")
+            # Check if data is available
+            bytes_waiting = self.serial_conn.in_waiting
+            if bytes_waiting > 0:
+                logger.info(f"Bytes waiting: {bytes_waiting}")
                 
-                # Try different decodings
-                try:
-                    message_utf8 = raw_message.decode('utf-8', errors='replace').strip()
-                    message_ascii = raw_message.decode('ascii', errors='replace').strip()
-                    message_latin1 = raw_message.decode('latin-1', errors='replace').strip()
-                except:
-                    message_utf8 = message_ascii = message_latin1 = "DECODE_ERROR"
+                # Try different reading methods
+                # Method 1: readline()
+                raw_message_line = self.serial_conn.readline()
                 
-                # Always show what we received, even if it appears empty
-                logger.info(f"UTF-8 decoded: '{message_utf8}' (length: {len(message_utf8)})")
-                logger.info(f"ASCII decoded: '{message_ascii}' (length: {len(message_ascii)})")
-                logger.info(f"Latin-1 decoded: '{message_latin1}' (length: {len(message_latin1)})")
+                # Method 2: read all available bytes
+                self.serial_conn.reset_input_buffer()  # Reset to try again
+                time.sleep(0.1)
+                bytes_waiting = self.serial_conn.in_waiting
+                if bytes_waiting > 0:
+                    raw_message_all = self.serial_conn.read(bytes_waiting)
+                else:
+                    raw_message_all = b''
                 
-                print(f"\n{'='*60}")
-                print(f"📨 MESSAGE FROM ACORN A310:")
-                print(f"    Raw bytes: {raw_message}")
-                print(f"    Hex: {raw_message.hex()}")
-                print(f"    UTF-8: '{message_utf8}' (len: {len(message_utf8)})")
-                print(f"    ASCII: '{message_ascii}' (len: {len(message_ascii)})")
-                print(f"    Latin-1: '{message_latin1}' (len: {len(message_latin1)})")
-                print(f"{'='*60}")
+                logger.info(f"Readline result: {raw_message_line} (hex: {raw_message_line.hex()})")
+                logger.info(f"Read all result: {raw_message_all} (hex: {raw_message_all.hex()})")
                 
-                # Return the best decoded message
-                message = message_utf8 or message_ascii or message_latin1
-                return message if message and message.strip() else "empty_message"
+                # Use whichever method got data
+                raw_message = raw_message_line if raw_message_line else raw_message_all
+                
+                if raw_message:
+                    # Try different decodings
+                    try:
+                        message_utf8 = raw_message.decode('utf-8', errors='replace').strip()
+                        message_ascii = raw_message.decode('ascii', errors='replace').strip()
+                        message_latin1 = raw_message.decode('latin-1', errors='replace').strip()
+                    except:
+                        message_utf8 = message_ascii = message_latin1 = "DECODE_ERROR"
+                    
+                    # Always show what we received
+                    logger.info(f"UTF-8 decoded: '{message_utf8}' (length: {len(message_utf8)})")
+                    logger.info(f"ASCII decoded: '{message_ascii}' (length: {len(message_ascii)})")
+                    
+                    print(f"\n{'='*60}")
+                    print(f"📨 MESSAGE FROM ACORN A310:")
+                    print(f"    Raw bytes: {raw_message}")
+                    print(f"    Hex: {raw_message.hex()}")
+                    print(f"    UTF-8: '{message_utf8}' (len: {len(message_utf8)})")
+                    print(f"    ASCII: '{message_ascii}' (len: {len(message_ascii)})")
+                    print(f"{'='*60}")
+                    
+                    # Return the best decoded message
+                    message = message_utf8 or message_ascii or message_latin1
+                    return message if message and message.strip() else "empty_message"
                     
         except Exception as e:
             logger.error(f"Error reading serial: {e}")
