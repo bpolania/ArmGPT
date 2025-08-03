@@ -7,13 +7,13 @@ main_mac_x64
 acorn_comm_mac_x64
 acorn_comm_mac_x64.o
 
-# Log files
-*.log
-build.log
-build_errors.log
-acorn_comm.log
-receiver_monitor.log
-serial_devices.log
+# Log files (commented out - we want to track logs)
+# *.log
+# build.log
+# build_errors.log
+# acorn_comm.log
+# receiver_monitor.log
+# serial_devices.log
 
 # Temporary files
 *.tmp
@@ -78,5 +78,5 @@ models/
 *.bin
 *.safetensors
 
-# Logs directory (but keep individual *.log pattern above)
-logs/
+# Logs directory (commented out - we want to track logs)
+# logs/
