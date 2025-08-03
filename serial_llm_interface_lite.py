@@ -36,7 +36,7 @@ logger.info(f"Logging to file: {log_filename}")
 class SerialLLMInterfaceLite:
     def __init__(self, 
                  port='/dev/serial0',
-                 baudrate=115200,
+                 baudrate=9600,
                  model_path='tinyllama-1.1b-chat-v1.0.Q4_K_M.gguf'):
         """
         Initialize the Lightweight Serial LLM Interface

@@ -37,7 +37,7 @@ logger.info(f"Logging to file: {log_filename}")
 class SerialLLMInterface:
     def __init__(self, 
                  port='/dev/serial0',
-                 baudrate=115200,
+                 baudrate=9600,
                  model_name='TinyLlama/TinyLlama-1.1B-Chat-v1.0'):
         """
         Initialize the Serial LLM Interface
@@ -358,7 +358,7 @@ def main():
     # You can customize these parameters
     interface = SerialLLMInterface(
         port='/dev/serial0',  # Default Raspberry Pi serial port
-        baudrate=115200,      # Match this with your other device
+        baudrate=9600,        # Match Acorn A310 baud rate
         model_name='TinyLlama/TinyLlama-1.1B-Chat-v1.0'  # Optimized for RPi
     )
     
