@@ -391,7 +391,7 @@ def main():
     
     parser = argparse.ArgumentParser(description='Lightweight Serial LLM Interface')
     parser.add_argument('--port', default='/dev/serial0', help='Serial port')
-    parser.add_argument('--baudrate', type=int, default=115200, help='Baud rate')
+    parser.add_argument('--baudrate', type=int, default=9600, help='Baud rate')
     parser.add_argument('--model', default='tinyllama-1.1b-chat-v1.0.Q4_K_M.gguf', 
                         help='Path to quantized GGUF model')
     
