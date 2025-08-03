@@ -52,6 +52,7 @@ class SerialLLMInterfaceLite:
         self.serial_conn = None
         self.llm = None
         self.arm_history = self.load_arm_history()
+        self.processing = False  # Flag to track if we're processing a message
         self.history_keywords = [
             'history', 'arm', 'acorn', 'sophie wilson', 'steve furber',
             'archimedes', 'a310', 'a305', 'a410', 'a440', 'risc', 'origin', 
@@ -99,33 +100,33 @@ class SerialLLMInterfaceLite:
         # Prioritize sections based on keywords
         if any(word in message_lower for word in ['archimedes', 'a310', 'a305', 'a410', 'a440', 'first risc', 'world first']):
             if 'Origins at Acorn Computers (1983-1990)' in self.arm_history:
-                # Find the Archimedes section specifically
+                # Find the Archimedes section specifically - keep it shorter for context window
                 section = self.arm_history['Origins at Acorn Computers (1983-1990)']
                 archimedes_start = section.find('### The Archimedes Computer: World\'s First RISC Home Computer')
                 if archimedes_start != -1:
-                    relevant_sections.append(section[archimedes_start:archimedes_start+1000])
+                    relevant_sections.append(section[archimedes_start:archimedes_start+300])  # Reduced from 1000 to 300
                 else:
-                    relevant_sections.append(section[:500])
+                    relevant_sections.append(section[:300])
         
         if any(word in message_lower for word in ['origin', 'created', 'founded', 'began', 'start']) and 'archimedes' not in message_lower:
             if 'Origins at Acorn Computers (1983-1990)' in self.arm_history:
-                relevant_sections.append(self.arm_history['Origins at Acorn Computers (1983-1990)'][:500])
+                relevant_sections.append(self.arm_history['Origins at Acorn Computers (1983-1990)'][:300])
         
         if any(word in message_lower for word in ['sophie wilson', 'steve furber', 'inventor', 'creator']):
             if 'Origins at Acorn Computers (1983-1990)' in self.arm_history:
-                relevant_sections.append(self.arm_history['Origins at Acorn Computers (1983-1990)'][:500])
+                relevant_sections.append(self.arm_history['Origins at Acorn Computers (1983-1990)'][:300])
         
         if 'connection' in message_lower or 'armgpt' in message_lower:
             if "ARM's Connection to ArmGPT" in self.arm_history:
-                relevant_sections.append(self.arm_history["ARM's Connection to ArmGPT"])
+                relevant_sections.append(self.arm_history["ARM's Connection to ArmGPT"][:300])
         
         if any(word in message_lower for word in ['business', 'model', 'license', 'licensing']):
             if 'The ARM Business Model' in self.arm_history:
-                relevant_sections.append(self.arm_history['The ARM Business Model'][:500])
+                relevant_sections.append(self.arm_history['The ARM Business Model'][:300])
         
         if any(word in message_lower for word in ['technical', 'architecture', 'processor']):
             if 'Technical Evolution' in self.arm_history:
-                relevant_sections.append(self.arm_history['Technical Evolution'][:500])
+                relevant_sections.append(self.arm_history['Technical Evolution'][:300])
         
         # If no specific sections matched, provide a brief overview
         if not relevant_sections and is_history_query:
@@ -173,7 +174,7 @@ class SerialLLMInterfaceLite:
             # Initialize with conservative settings for Raspberry Pi
             self.llm = Llama(
                 model_path=self.model_path,
-                n_ctx=512,          # Context window
+                n_ctx=1024,         # Increased context window from 512 to 1024
                 n_threads=4,        # Use 4 threads on RPi
                 n_gpu_layers=0,     # CPU only
                 verbose=False
@@ -240,6 +241,14 @@ Remember: You're not generic customer support - you're ArmGPT, a specialized com
     def read_serial_message(self) -> Optional[str]:
         """Read a complete message from serial port"""
         try:
+            # Ignore incoming messages if we're currently processing
+            if self.processing:
+                if self.serial_conn.in_waiting > 0:
+                    discarded_bytes = self.serial_conn.read(self.serial_conn.in_waiting)
+                    logger.info(f"Ignored message while processing: {discarded_bytes}")
+                    print(f"🚫 Ignored message while processing: {discarded_bytes.decode('utf-8', errors='replace')}")
+                return None
+            
             # Check if data is available
             bytes_waiting = self.serial_conn.in_waiting
             if bytes_waiting > 0:
@@ -301,7 +310,7 @@ Remember: You're not generic customer support - you're ArmGPT, a specialized com
             response_bytes = (response + '\n').encode('utf-8')
             self.serial_conn.write(response_bytes)
             self.serial_conn.flush()
-            logger.info(f"Sent: {response}")
+            logger.info(f"Response sent: {response}")  # Changed from "Sent:" to "Response sent:" for clarity
             # Display response prominently on screen
             print(f"\n🤖 ARMGPT RESPONSE TO ACORN:")
             print(f"    {response}")
@@ -353,16 +362,24 @@ Remember: You're not generic customer support - you're ArmGPT, a specialized com
                     message_count += 1
                     logger.info(f"Message #{message_count}")
                     
-                    # Generate response
-                    logger.info("Generating response...")
-                    response = self.generate_response(message)
+                    # Set processing flag to ignore new messages
+                    self.processing = True
                     
-                    if response.startswith("Error:"):
-                        error_count += 1
-                        logger.error(f"Error count: {error_count}")
-                    
-                    # Send response back
-                    self.send_serial_response(response)
+                    try:
+                        # Generate response
+                        logger.info("Generating response...")
+                        response = self.generate_response(message)
+                        
+                        if response.startswith("Error:"):
+                            error_count += 1
+                            logger.error(f"Error count: {error_count}")
+                        
+                        # Send response back
+                        self.send_serial_response(response)
+                        
+                    finally:
+                        # Always clear processing flag
+                        self.processing = False
                 
                 # Small delay to prevent CPU overuse
                 time.sleep(0.01)
