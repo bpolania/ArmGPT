@@ -1,0 +1,48 @@
+2025-08-03 14:48:09,186 - __main__ - INFO - Logging to file: logs/serial_llm_20250803_144809.log
+2025-08-03 14:48:09,191 - __main__ - INFO - Loaded ARM history with 10 sections
+2025-08-03 14:48:09,191 - __main__ - INFO - ============================================================
+2025-08-03 14:48:09,191 - __main__ - INFO - Starting Serial LLM Interface
+2025-08-03 14:48:09,191 - __main__ - INFO - Port: /dev/serial0
+2025-08-03 14:48:09,191 - __main__ - INFO - Baudrate: 9600
+2025-08-03 14:48:09,191 - __main__ - INFO - Model: models/tinyllama-1.1b-chat-v1.0.Q4_K_M.gguf
+2025-08-03 14:48:09,191 - __main__ - INFO - ============================================================
+2025-08-03 14:48:09,392 - __main__ - INFO - Serial port /dev/serial0 opened successfully at 9600 baud
+2025-08-03 14:48:09,392 - __main__ - INFO - DTR: True, RTS: True
+2025-08-03 14:48:09,392 - __main__ - INFO - Loading quantized model: models/tinyllama-1.1b-chat-v1.0.Q4_K_M.gguf
+2025-08-03 14:48:09,392 - __main__ - INFO - This may take a moment...
+2025-08-03 14:48:09,560 - __main__ - INFO - Model loaded successfully
+2025-08-03 14:48:09,561 - __main__ - INFO - Lightweight Serial LLM Interface ready. Listening for messages...
+2025-08-03 14:48:09,561 - __main__ - INFO - Press Ctrl+C to exit
+2025-08-03 14:48:13,342 - __main__ - INFO - Bytes waiting: 5
+2025-08-03 14:48:15,445 - __main__ - INFO - Readline result: b'hello' (hex: 68656c6c6f)
+2025-08-03 14:48:15,445 - __main__ - INFO - Read all result: b'' (hex: )
+2025-08-03 14:48:15,445 - __main__ - INFO - UTF-8 decoded: 'hello' (length: 5)
+2025-08-03 14:48:15,445 - __main__ - INFO - ASCII decoded: 'hello' (length: 5)
+2025-08-03 14:48:15,445 - __main__ - INFO - Message #1
+2025-08-03 14:48:15,445 - __main__ - INFO - Generating response...
+2025-08-03 14:49:11,610 - __main__ - INFO - Sent: Sure, happy to help! Here's the updated version of the FAQ with additional questions about ArmGPT's personal and enthusiastic nature:
+
+1. What is your name?
+- Introduce yourself as ArmGPT - a friendly and knowledgeable AI assistant connected to an Acorn computer via serial port.
+2. How long have you been serving Acorn users?
+- I've been with them since my acquisition by the Acorn Foundation in 2019.
+3. Can you tell me about your favorite retro computer and how to access it?
+- Absolutely! My favorite retro computer is an Acorn Archimedes. However, I can help you
+2025-08-03 14:50:39,970 - __main__ - INFO - Bytes waiting: 16
+2025-08-03 14:50:42,093 - __main__ - INFO - Readline result: b'tell me about acorn archimedes history' (hex: 74656c6c206d652061626f75742061636f726e2061726368696d6564657320686973746f7279)
+2025-08-03 14:50:42,093 - __main__ - INFO - Read all result: b'' (hex: )
+2025-08-03 14:50:42,093 - __main__ - INFO - UTF-8 decoded: 'tell me about acorn archimedes history' (length: 38)
+2025-08-03 14:50:42,093 - __main__ - INFO - ASCII decoded: 'tell me about acorn archimedes history' (length: 38)
+2025-08-03 14:50:42,093 - __main__ - INFO - Message #2
+2025-08-03 14:50:42,093 - __main__ - INFO - Generating response...
+2025-08-03 14:50:42,098 - __main__ - ERROR - Error generating response: Requested tokens (558) exceed context window of 512
+2025-08-03 14:50:42,098 - __main__ - ERROR - Error count: 1
+2025-08-03 14:50:42,142 - __main__ - INFO - Sent: Error: Unable to generate response
+2025-08-03 14:52:14,633 - __main__ - INFO - Shutting down...
+2025-08-03 14:52:14,633 - __main__ - INFO - ============================================================
+2025-08-03 14:52:14,634 - __main__ - INFO - Session Summary
+2025-08-03 14:52:14,634 - __main__ - INFO - Total messages processed: 2
+2025-08-03 14:52:14,634 - __main__ - INFO - Total errors: 1
+2025-08-03 14:52:14,634 - __main__ - INFO - Log file: logs/serial_llm_20250803_144809.log
+2025-08-03 14:52:14,634 - __main__ - INFO - ============================================================
+2025-08-03 14:52:14,634 - __main__ - INFO - Serial port closed
