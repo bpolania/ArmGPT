@@ -142,10 +142,13 @@ class SerialLLMInterfaceLite:
             self.serial_conn = serial.Serial(
                 port=self.port,
                 baudrate=self.baudrate,
-                timeout=0.1,
+                timeout=1.0,  # Increased timeout
                 bytesize=serial.EIGHTBITS,
                 parity=serial.PARITY_NONE,
-                stopbits=serial.STOPBITS_ONE
+                stopbits=serial.STOPBITS_ONE,
+                xonxoff=False,  # Disable software flow control
+                rtscts=False,   # Disable hardware flow control
+                dsrdtr=False    # Disable DSR/DTR flow control
             )
             logger.info(f"Serial port {self.port} opened successfully at {self.baudrate} baud")
             return True
@@ -233,21 +236,33 @@ Remember: You're not generic customer support - you're ArmGPT, a specialized com
                 # Read raw bytes first for debugging
                 raw_message = self.serial_conn.readline()
                 logger.info(f"Raw bytes received: {raw_message}")
+                logger.info(f"Raw bytes hex: {raw_message.hex()}")
                 
-                # Decode and clean the message
-                message = raw_message.decode('utf-8', errors='replace').strip()
+                # Try different decodings
+                try:
+                    message_utf8 = raw_message.decode('utf-8', errors='replace').strip()
+                    message_ascii = raw_message.decode('ascii', errors='replace').strip()
+                    message_latin1 = raw_message.decode('latin-1', errors='replace').strip()
+                except:
+                    message_utf8 = message_ascii = message_latin1 = "DECODE_ERROR"
                 
                 # Always show what we received, even if it appears empty
-                logger.info(f"Decoded message: '{message}' (length: {len(message)})")
+                logger.info(f"UTF-8 decoded: '{message_utf8}' (length: {len(message_utf8)})")
+                logger.info(f"ASCII decoded: '{message_ascii}' (length: {len(message_ascii)})")
+                logger.info(f"Latin-1 decoded: '{message_latin1}' (length: {len(message_latin1)})")
+                
                 print(f"\n{'='*60}")
                 print(f"📨 MESSAGE FROM ACORN A310:")
-                print(f"    Raw: {raw_message}")
-                print(f"    Decoded: '{message}' (length: {len(message)})")
+                print(f"    Raw bytes: {raw_message}")
+                print(f"    Hex: {raw_message.hex()}")
+                print(f"    UTF-8: '{message_utf8}' (len: {len(message_utf8)})")
+                print(f"    ASCII: '{message_ascii}' (len: {len(message_ascii)})")
+                print(f"    Latin-1: '{message_latin1}' (len: {len(message_latin1)})")
                 print(f"{'='*60}")
                 
-                # Return message even if it appears empty (might be whitespace/control chars)
-                if len(raw_message) > 0:
-                    return message if message else " "  # Return space if message is empty string
+                # Return the best decoded message
+                message = message_utf8 or message_ascii or message_latin1
+                return message if message and message.strip() else "empty_message"
                     
         except Exception as e:
             logger.error(f"Error reading serial: {e}")
