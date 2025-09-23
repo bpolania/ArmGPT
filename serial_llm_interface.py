@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Serial LLM Interface for Raspberry Pi
-Listens to serial0 port, processes messages through a local LLM, and responds back
+Listens to ttyUSB0 port, processes messages through a local LLM, and responds back
 """
 
 import serial
@@ -36,14 +36,14 @@ logger.info(f"Logging to file: {log_filename}")
 
 class SerialLLMInterface:
     def __init__(self, 
-                 port='/dev/serial0',
+                 port='/dev/ttyUSB0',
                  baudrate=9600,
                  model_name='TinyLlama/TinyLlama-1.1B-Chat-v1.0'):
         """
         Initialize the Serial LLM Interface
         
         Args:
-            port: Serial port to use (default: /dev/serial0 for Raspberry Pi)
+            port: Serial port to use (default: /dev/ttyUSB0 for Raspberry Pi)
             baudrate: Baud rate for serial communication
             model_name: Hugging Face model to use
         """
@@ -374,7 +374,7 @@ def main():
     """Main entry point"""
     # You can customize these parameters
     interface = SerialLLMInterface(
-        port='/dev/serial0',  # Default Raspberry Pi serial port
+        port='/dev/ttyUSB0',  # Default Raspberry Pi serial port
         baudrate=9600,        # Match Acorn A310 baud rate
         model_name='TinyLlama/TinyLlama-1.1B-Chat-v1.0'  # Optimized for RPi
     )

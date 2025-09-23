@@ -38,7 +38,7 @@ logger.info(f"Logging to file: {log_filename}")
 
 class SerialLLMInterfaceLite:
     def __init__(self, 
-                 port='/dev/serial0',
+                 port='/dev/ttyUSB0',
                  baudrate=9600,
                  model_path='tinyllama-1.1b-chat-v1.0.Q4_K_M.gguf',
                  openai_api_key=None):
@@ -46,7 +46,7 @@ class SerialLLMInterfaceLite:
         Initialize the Lightweight Serial LLM Interface
         
         Args:
-            port: Serial port to use (default: /dev/serial0 for Raspberry Pi)
+            port: Serial port to use (default: /dev/ttyUSB0 for Raspberry Pi)
             baudrate: Baud rate for serial communication
             model_path: Path to quantized GGUF model file
             openai_api_key: OpenAI API key for ChatGPT integration
@@ -526,7 +526,7 @@ def main():
     import argparse
     
     parser = argparse.ArgumentParser(description='Lightweight Serial LLM Interface with ChatGPT Integration')
-    parser.add_argument('--port', default='/dev/serial0', help='Serial port')
+    parser.add_argument('--port', default='/dev/ttyUSB0', help='Serial port')
     parser.add_argument('--baudrate', type=int, default=9600, help='Baud rate')
     parser.add_argument('--model', default='tinyllama-1.1b-chat-v1.0.Q4_K_M.gguf', 
                         help='Path to quantized GGUF model')

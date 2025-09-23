@@ -15,7 +15,7 @@ ArmGPT is a gentle and amicable AI assistant that connects to Acorn computers vi
 - **Hybrid AI System**: ChatGPT API when online, TinyLlama when offline
 - **Smart Fallback**: Automatically switches between online/offline modes
 - **Real-time Connectivity**: Checks internet status for each query
-- Listens on serial0 port (configurable)
+- Listens on ttyUSB0 port (configurable)
 - Robust error handling with comprehensive logging
 - Automatic log file creation with timestamps
 - Session summary with message and error counts
@@ -56,7 +56,7 @@ python serial_llm_interface_lite.py --model models/tinyllama-1.1b-chat-v1.0.Q4_K
 ## Configuration
 
 Default settings:
-- Port: `/dev/serial0`
+- Port: `/dev/ttyUSB0`
 - Baudrate: 115200
 - Model: TinyLlama 1.1B (quantized)
 

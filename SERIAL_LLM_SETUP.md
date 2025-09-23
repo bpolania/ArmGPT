@@ -74,7 +74,7 @@ python serial_llm_interface.py
 ## Configuration
 
 ### Serial Port Settings
-- Default port: `/dev/serial0` (Raspberry Pi)
+- Default port: `/dev/ttyUSB0` (Raspberry Pi)
 - Default baudrate: 115200
 - 8 data bits, no parity, 1 stop bit
 
