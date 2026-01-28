@@ -1,0 +1,79 @@
+Arm Community
+Architectures and Processors blog
+May 6, 2015
+A Brief History of Arm: Part 2
+Continuing on from my earlier blog: A Brief History of Arm, I pick up the history of Arm in 1998 as it became a public company after being floated on the London stock exchange (FTSE) and the NASDAQ.
+By
+Ben Walshe
+Continuing on from my earlier blog:
+A Brief History of Arm: Part 1
+. I pick up the history of Arm in 1998 as it became a public company after being floated on the London stock exchange (FTSE) and the NASDAQ. Please see the
+Arm milestones
+on the website for a more in-depth look at the breakdown of the years Arm has been operating. There is also a nice section on the website that details the range of
+classic Arm processors
+.
+Late 1990s: Growth, the Dot com crash and pressures of being a public company
+The late 1990’s were a booming time for technology, and Arm was at the height of that boom. The problem was that there was this disruptive internet bubble where many technology companies sprang up out of nowhere and were valued at ridiculous amounts even though they were built on debt often with very little in the way of concrete revenue forecasts. Arm was riding the high stock evaluations of technology companies with a share price of over £10 – valuing the company at over 300 times its actual earnings for 1999 (Crazy, I know), and it was ranked 30
+th
+on the FTSE 100 index of more valuable companies. The massive valuation for the size of the company at the time was something that has not been seen since the dot com boom.
+In the early 2000’s the inevitable happened and the crash came. The technology sector crumbled and devalued overall on the stock market by 80-90%. Irrespective of whether a company was profitable or not, it took a sharp decline. This is best illustrated by global semiconductor revenues for those years
+Semiconductor revenue since 1998 - note the drop at 2001 and 2009 recessions - Credit -
+Can lean innovation bring growth and profits back to semiconductors? | Solid State Technology
+Even though Arm hit its earning targets, and had no debt or financial disappointments they still felt the squeeze of the recession. From people who worked here at that time it has been described as a period of ‘unhappiness’ and ‘not a very nice place to be’. Industry redundancies came but the workforce at Arm thankfully wasn’t hit too badly. Arm had entered a new age where they didn’t live quarter to quarter. They carefully laid out road-maps for where the business would be in 5 years and started to follow a long term plan, and in 2001 Warren East was appointed CEO of Arm, with Robin Saxby taking up to the role of Chairman of Arm. The vision of becoming the standard processor architecture was coming true.
+The Age of Maturity, 2002-2005
+Microprocessors had become so small that they only occupied a small part of the chip, so the issue was how to build software-based systems on a single chip or system on chip (SoC) solutions. Notwithstanding the huge investment and cost-of-ownership associated with maintaining a proprietary processor architecture. The majority of companies had neither design teams with the ability to build their own microprocessor, or the tools needed to make them usable. This is one of the main reasons that microprocessors were one of the first to use the IP license model and as a result, Arm was designed into more and more SoCs, especially in the explosively growing cell-phone market where Arm had gradually become the de-facto standard.
+However, the Arm core was “hard IP” and its application to different technologies was a real problem. Arm needed to produce a synthesizable core that could be licensed to anyone without needing a technology-specific port of the core. In 2001 the ARM926EJ-S was announced. It was fully synthesizable with a 5 stage pipeline and an integrated MMU, as well as hardware support for Java acceleration and some DSP operations. It went on to be licensed by over 100 silicon vendors worldwide and has gone on to ship multiple billions of units.
+The importance of the success of Arm’s partners was something that really stood out to me when I joined Arm nearly a year ago. As mentioned in my previous blog, the success of partners means success for Arm. It is one of the rare times in business when each company with which Arm conducts business has a symbiotic relationship of ‘better together’. This approach is aided by the fact that Arm is British, and headquartered in Britain (a somewhat neutral ground for the semiconductor industry). Arm has never been focused solely on a select number of partners, and to this day has had hundreds of partners worldwide.
+The Arm Logo in 2005, which was replaced in 2017
+After the dot com crash the industry was still recovering, as was Arm. However steady growth and the ARM9 became the new ARM7, which became the ARM9E and then the ARM10. The ARM10 and ARM11 technology really broke new ground in terms of low power, high performance processing. Arm tripled its headcount from 400 people to 1,300 people in only 3 years! But Arm was a more mature, smarter company by this point, and realized they could not continue the upwards and to the right trend of their current offerings. They decided to diversify the offerings to cover all the needs of the industry.
+The New Age of Cortex Processors, 2005-2012
+The Cortex family was the diversification that Arm brought to the industry.
+Cortex-A
+continued the current offerings following on from the ARM11 following the trend of leading edge mobile applications demanding higher performance.
+Cortex-R
+provided high performance, real time processors that catered for the highly specialized real-time requirements.
+Cortex-M
+provided extremely low power, low cost cores to the micro-controller industry. This was driven by the simple observation that the market for high performance processors is huge, but the market for low-cost micro controllers is truly colossal and this market was not well addressed by the latest Arm cores.
+The most recent Cortex processors as of 2015
+By 2008 the smartphone market was booming and the demand for increased performance while at the same time maintaining a long battery life presented quite a challenge. Ever more powerful single core architectures would not be the solution forever and Arm responded with the
+Cortex-A9
+MPCore, a multi-core processor which was better able to address the huge dynamic range in processing to accommodate for a smartphones vastly different user needs, from gaming to texting. This was further improved with the introduction of the heterogeneous “
+big.LITTLE
+” approach in 2011, which provides high performance with a powerful core when required and then switches back to much lower power core when high performance is not needed.
+Arm currently has a 96% share in the mobile market, and shows no signs of slowing down.
+If you want a more detailed breakdown of the Cortex series, please view this great breakdown by
+Chris Shore
+in his blog -
+Navigating the Cortex Maze
+The Age of Leadership and Diversification. 2012 to the future…
+The Arm model is another really interesting aspect of the history. The licensing provides up-front revenue for Arm, but the royalties don’t come into play until up to 5 years after. So technically, Arm is licensing processors that don’t start fully generating revenue until 5 years later. An example of this is the ARM7, which is no longer sold or supported by Arm, but you can see it has shipped more each year (date range up to 2011).
+Arm7 shipments up to 2011 - Note the upward trend event though Arm stopped supporting the processor many years ago.
+With the Cortex series being over 10 years old, the royalties will be building up for the chips produced over the next few years, and we can see from the graph below, that Arm based units are growing massively year on year, currently at 12 Billion a year, and have just passed 60 Billion total units shipped. At this rate, Arm is set to reach 20 Billion units shipped a year (and a total of 150bn shipped) by 2020. This is simply a number beyond belief and expresses the importance of partners to Arm once again.
+Arm Partner shipments from a 2015 Arm report
+What’s next for Arm?
+Well if you want to know more, these blogs may be of interest!
+Meet the new Arm Cortex-M7 processor: supercharging embedded devices
+by
+Bee Hayes-Thakore
+Arm Cortex-A72 and the New Premium Mobile Experience
+by
+Nandan Nayampally
+System IP for 2016 Premium Mobile Systems
+by
+Andy Nightingale
+Arm Cortex-R real-time processors speed your mobile communications
+by
+Chris Turner
+To finish, I'll share a picture that
+Chris Shore
+introduced to me. It really demonstrates the innovation of the Arm processor over the years. Pushing performance barriers and power demands is not the only way to go. Only one part of the market lies in this quadrant.
+In less than 30 years the size reduction of processors have been astounding
+Here is the very first ARM1, developed by Acorn in 1985. 6000 gates and 50mm2 on 3u technology. Beside it is the
+Cortex-M0
+, 8000 gates and less than 1/10000th of the size on 20nm technology. At the other end of the scale, here is a dual-core Cortex-A9 with
+Mali-400
+graphics core. Weighing in at 100M gates, on 40nm technology it is almost exactly the same size as the original ARM1 yet it is nearly impossible to explain the vast difference in performance.
+It is certainly true to say that no other processor company offers a range of solutions which are as diverse or as complete. Arm is a unique company, and it's history proves that!
+
+
+                

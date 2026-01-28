@@ -62,6 +62,12 @@ core.*
 # Generated files
 src/main_mac_x64.s
 
+# RAG index artifacts
+data/arm_index.jsonl
+data/*.npy
+data/*.pkl
+data/*.faiss
+
 # Python
 __pycache__/
 *.py[cod]

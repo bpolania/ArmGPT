@@ -1,0 +1,44 @@
+Output Browser Output
+
+40 years of the ARM chip: From Cambridge to the world
+25 Apr, 2025
+Tony Quested
+As tech entrepreneur and Acorn Computers co-founder Hermann Hauser recently reminded me, the ARM chip which made its bow 40 years ago this month was actually christened the Acorn RISC Machine considering where it was founded.
+The ARM3 chip design team in 1989. Courtesy – Arm.
+The fact remains that this was the start of Arm's incredible journey to world super chip domination and a hallowed position on Nasdaq in New York.
+The 40th anniversary of the Acorn-gated chip which set today's Arm on its way remains highly significant and is being celebrated in a number of ways. Dr Hauser tells me how, in a roundabout way, the invention would ultimately save tech giant Apple from early closure!
+He says: “Yes, ARM was a spin-out from Acorn which I arranged with Apple who got 43 per cent of ARM for $1.5 million. Acorn had 43 per cent and the rest was the team we spun out and five per cent for VLSI technology who were our chip supplier.
+“
+John Sculley said
+that Apple would have gone bust if they had not been able to sell this stake for $800m when they were in deep trouble before Steve Jobs came back.”
+Arm - so-called after the sobriquet Advanced RISC Machines - was founded as a separate company in 1990. The founding engineers were joined by Sir Robin Saxby as CEO and its own miraculous story was born in a barn in Cambridgeshire. Humble roots but look at Arm now.
+It today tells the story in its own words...
+The birth and evolution of Arm
+April 2025 marks the 40th anniversary of the Arm architecture. What began as an ambitious project in a small corner of Cambridge UK has grown into the world’s most widely adopted computing architecture, now powering billions of devices – from sensors, smartphones and laptops to vehicles, data centres and beyond.
+The Arm architecture story began over four decades ago, driven by a small team with a big vision: to make high-performance, power-efficient computing accessible to all. Born out of simplicity, elegance and parsimony, the architecture laid the groundwork for a new era of efficient, scalable technology.
+To truly appreciate how Arm’s architecture became the foundation of modern computing, we need to wind back the clock over four decades ago to where it all began.
+Acorn Computers and the BBC Micro
+In 1978, Chris Curry and Hermann Hauser co-founded Acorn Computers, a startup with roots in Cambridge and a knack for spotting opportunity. The company was awarded the contract to build the BBC Micro, part of a UK government initiative to place a computer in every classroom. That win would mark a pivotal moment – not just for Acorn, but for the future of computing.
+To power the BBC Micro, Acorn initially relied on the 6502 microprocessor. But when Acorn began dreaming of more powerful machines, the company decided to build its own processor – a bold and unusual move for a small firm at the time.
+ARM1 unleashes revolutionary processing technology
+In the early 1980s, two highly ambitious engineers – Sophie Wilson and Steve Furber – were tasked with designing a 32-bit processor. With limited resources, they crafted processor architecture that was efficient, elegant, and simple by design. Their invention, the ARM1, was completed in 1985 using just 25,000 transistors on three-micron technology. It was low power, fast, and incredibly energy efficient.
+What started as a project born out of necessity quickly became a new architectural philosophy: RISC (Reduced Instruction Set Computing). Unlike the complex instruction sets of the time, RISC allowed for streamlined, faster processing—exactly what Acorn needed to push the boundaries of performance.
+A chip for the masses
+The internal slogan was “MIPS for the Masses” (Millions of Instructions Per Second). This mindset separated the Arm architecture from other processor designs at the time that were focused on high-end workstations or mainframes. The Arm architecture was thinking power-efficient, fast, and scalable.
+The first system to showcase this new architecture was the Acorn Archimedes, released in 1987 – the world’s first RISC-based home computer.
+The shift from Acorn to independence
+However, Acorn’s journey wasn’t always smooth. Financial challenges led to a restructuring, and eventually, the birth of Advanced RISC Machines (ARM) Ltd in 1 990 as a joint venture between Acorn, Apple, and VLSI Technology. Their mission? To bring the power and efficiency of the Arm architecture to a broader market.
+One of Arm’s earliest breakthroughs came with the launch of the Apple Newton, one of the first commercial devices powered by Arm architecture. While the Newton itself saw limited market success, it played a pivotal role in setting the stage for Arm’s global expansion. Not long after, Arm-powered technology began appearing in mobile phones, consumer electronics, IoT devices, and embedded systems—quickly becoming known for its ultra-low power consumption and compact design.
+Interestingly, Arm’s low-power design wasn’t just a strategic innovation – it was born out of necessity. In the early days, Acorn couldn’t afford expensive ceramic chip packaging, so the processor had to be efficient enough to run in a cheaper plastic package.
+With no tools available to estimate power consumption, the chip was over-engineered for safety – a decision that ultimately resulted in a processor that was exceptionally power-efficient, setting the tone for decades of energy-conscious design.
+From mobile milestone to market standard
+One of the Arm architecture’s early breakout moments came with the Nokia 6110. Powered by the Arm7TDMI processor, the mobile device became one of the best-selling mobile devices of its time, marking the beginning of Arm’s explosive growth in the mobile space.
+From there, the Arm architecture didn’t just scale – it soared. It became the de facto standard for mobile, embedded, IoT, and edge devices, with adoption now growing significantly across the cloud and datacenter.
+Today, Arm technology is licensed by hundreds of companies and found in over 300 billion chips – a testament to the scalability and versatility of the Arm architecture, now in its ninth generation: Armv9. To put that into perspective, while an estimated 110 billion people have ever lived, more than 250 billion Arm cores have been shipped – meaning there are literally more ARMs than arms in the world.
+As outlined here, the Arm architecture is continually evolving, shaping the computing landscape today and into the future. From major feature updates to smaller, incremental enhancements, each step forward brings improved performance, greater efficiency, and expanded capabilities across a wide range of devices and applications.
+Same footprint, unmatched power
+To put this journey into perspective: the original ARM1 processor used 6,000 gates and had no cache. A modern Armv9 CPU, built on 40nm technology, fits in roughly the same footprint – but features 100 million gates, graphics acceleration, and multi-core capabilities. That’s a monumental leap in performance, power, and functionality – without abandoning the architecture’s original spirit of efficiency.
+A legacy steeped in innovation
+What sets the Arm architecture apart is not just its technical strengths – but its underlying philosophy. From the beginning, Arm was designed with simplicity, flexibility, and energy efficiency at its core.
+This makes it uniquely suited for a world where computing needs to be faster, smarter, and more connected – yet still compact and energy-aware. Whether it’s in a smartphone, a smart thermostat, or a server in the cloud, Arm provides the intelligence that drives modern computing.
+And the journey is far from over. As AI, edge computing, and sustainability reshape the technology landscape, the architecture that began in a Cambridge lab decades ago is more relevant than ever. Built to enable competitive, high-performance, low-power processors at scale, Arm has become the accepted standard in every market it touches – and it continues to power the future.
