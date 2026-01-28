@@ -4,7 +4,12 @@ ArmGPT is a gentle and amicable AI assistant that connects to Acorn computers vi
 
 ## Overview
 
-**Serial LLM Interface Lite** (`serial_llm_interface_lite.py`) - Optimized for Raspberry Pi:
+**ArmGPT Server** (`arm_gpt_server.py`) - The recommended way to run ArmGPT:
+- Simple `usb` or `serial` argument to select your serial port
+- Uses llama-cpp-python with quantized models
+- Optimized for Raspberry Pi and edge devices
+
+**Serial LLM Interface Lite** (`serial_llm_interface_lite.py`) - Legacy interface:
 - Uses llama-cpp-python with quantized models
 - Works on devices with only 2GB RAM
 - Faster inference with good quality responses
@@ -33,7 +38,19 @@ pip install -r requirements-lite.txt
 # Download the quantized TinyLlama model
 ./download_model.sh
 
-# Run the interface
+# Run with USB-to-serial adapter (/dev/ttyUSB0)
+python arm_gpt_server.py usb
+
+# Or run with Raspberry Pi GPIO serial (/dev/serial0)
+python arm_gpt_server.py serial
+
+# Specify a custom model
+python arm_gpt_server.py usb --model models/tinyllama-1.1b-chat-v1.0.Q4_K_M.gguf
+```
+
+### Legacy interface
+
+```bash
 python serial_llm_interface_lite.py --model models/tinyllama-1.1b-chat-v1.0.Q4_K_M.gguf
 ```
 
@@ -45,12 +62,26 @@ python serial_llm_interface_lite.py --model models/tinyllama-1.1b-chat-v1.0.Q4_K
 
 ## Configuration
 
+### arm_gpt_server.py
+
+| Argument | Required | Default | Description |
+|----------|----------|---------|-------------|
+| `usb` or `serial` | Yes | — | `usb` = `/dev/ttyUSB0`, `serial` = `/dev/serial0` |
+| `--model` | No | `tinyllama-1.1b-chat-v1.0.Q4_K_M.gguf` | Path to quantized GGUF model |
+| `--baudrate` | No | `9600` | Baud rate for serial communication |
+
+```bash
+python arm_gpt_server.py usb --baudrate 115200 --model path/to/model.gguf
+python arm_gpt_server.py serial --model path/to/model.gguf
+```
+
+### serial_llm_interface_lite.py (legacy)
+
 Default settings:
 - Port: `/dev/ttyUSB0`
 - Baudrate: 115200
 - Model: TinyLlama 1.1B (quantized)
 
-Custom configuration:
 ```bash
 python serial_llm_interface_lite.py --port /dev/ttyUSB0 --baudrate 9600 --model path/to/model.gguf
 ```
