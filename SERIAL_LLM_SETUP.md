@@ -1,147 +1,202 @@
-# Serial LLM Interface Setup Guide
+# Serial Interface Setup Guide
 
-This guide helps you set up a Python program that listens to the serial port, processes messages through a local LLM, and sends responses back.
+This guide covers the serial side of ArmGPT and the available AI backends.
 
-## Two Versions Available
+## Choose A Backend
 
-### 1. **Full Version** (`serial_llm_interface.py`)
-- Uses Hugging Face Transformers
-- Requires 4GB+ RAM
-- Better response quality
-- Slower on Raspberry Pi
+| Backend | Script | Install profile |
+|---------|--------|-----------------|
+| Ollama with RAG | `arm_gpt_server.py` | `requirements-lite.txt`, Ollama, `qwen2.5:1.5b`, `nomic-embed-text` |
+| Codex CLI | `serial_codex_interface.py` | `requirements-lite.txt`, installed and logged-in Codex CLI |
+| llama-cpp legacy | `serial_llm_interface_lite.py` | `pyserial`, `llama-cpp-python`, local GGUF model |
+| Transformers legacy | `serial_llm_interface.py` | `requirements.txt`, enough RAM for Transformers |
 
-### 2. **Lite Version** (`serial_llm_interface_lite.py`) - Recommended for RPi
-- Uses llama-cpp-python with quantized models
-- Works with 2GB RAM
-- Faster inference
-- Slightly reduced quality
+Use the Ollama backend for local RAG-grounded answers. Use the Codex CLI backend when you want to reuse a Codex CLI session instead of running a local model.
 
-## Installation
+## Serial Port Setup
 
-### For Raspberry Pi (Recommended: Lite Version)
+### Raspberry Pi UART
 
-1. **Install system dependencies and create virtual environment:**
+Enable UART in `/boot/config.txt`:
+
 ```bash
-sudo apt-get update
-sudo apt-get install python3-pip python3-dev python3-venv
-
-# Create and activate virtual environment
-python3 -m venv venv
-source venv/bin/activate
-
-# Install Python dependencies
-pip install -r requirements-lite.txt
-```
-
-2. **Download the quantized model:**
-```bash
-chmod +x download_model.sh
-./download_model.sh
-```
-
-3. **Enable serial port on Raspberry Pi:**
-```bash
-# Add to /boot/config.txt:
 enable_uart=1
+```
 
-# Disable console on serial:
+Disable the login console on the serial port if needed:
+
+```bash
 sudo systemctl disable serial-getty@ttyS0.service
 ```
 
-4. **Run the program:**
-```bash
-# Make sure virtual environment is activated
-source venv/bin/activate
+### Permissions
 
-# Run the program
-python serial_llm_interface_lite.py --model models/tinyllama-1.1b-chat-v1.0.Q4_K_M.gguf
+If opening the serial port fails with a permission error:
+
+```bash
+sudo usermod -a -G dialout $USER
 ```
 
-### For Systems with More RAM (Full Version)
+Log out and back in after changing groups.
 
-1. **Create virtual environment and install dependencies:**
+### Defaults
+
+- USB serial adapter: `/dev/ttyUSB0`
+- Raspberry Pi GPIO serial: `/dev/serial0`
+- Baud rate used by the scripts: `9600`
+- Serial framing: 8 data bits, no parity, 1 stop bit
+
+## Ollama Backend
+
+Install Python dependencies:
+
+```bash
+python3 -m venv venv
+source venv/bin/activate
+pip install -r requirements-lite.txt
+```
+
+Prepare Ollama:
+
+```bash
+ollama pull qwen2.5:1.5b
+ollama pull nomic-embed-text
+python build_index.py
+```
+
+Run:
+
+```bash
+python arm_gpt_server.py usb
+python arm_gpt_server.py serial
+```
+
+The generated RAG index is `data/arm_index.jsonl`. If the index is missing, the server still runs, but ARM documentation retrieval will be unavailable.
+
+## Codex CLI Backend
+
+Install Python dependencies:
+
+```bash
+python3 -m venv venv
+source venv/bin/activate
+pip install -r requirements-lite.txt
+```
+
+Verify Codex:
+
+```bash
+codex --version
+codex doctor
+```
+
+Run:
+
+```bash
+python serial_codex_interface.py --port /dev/ttyUSB0 --baudrate 9600
+```
+
+If Codex is not on `PATH`:
+
+```bash
+python serial_codex_interface.py --codex-command /path/to/codex
+```
+
+Useful options:
+
+```bash
+python serial_codex_interface.py --port /dev/serial0
+python serial_codex_interface.py --codex-model gpt-5 --timeout 240
+python serial_codex_interface.py --codex-cwd /path/to/ArmGPT
+python serial_codex_interface.py --docs-dir data/arm_docs --top-k 4 --max-context-chars 3600
+```
+
+Behavior notes:
+
+- The script calls `codex exec` once per serial message.
+- Codex receives an ArmGPT personality prompt plus the user message.
+- The prompt includes lightweight retrieved context from `data/arm_docs/*.txt`.
+- Codex is invoked with `--sandbox read-only`, `--ask-for-approval never`, and `--ephemeral`.
+- The script captures Codex's final answer with `--output-last-message`.
+- This backend depends on the host's Codex CLI login and availability.
+
+## Legacy llama-cpp Backend
+
+Use this for a fully offline GGUF model:
+
+```bash
+python3 -m venv venv
+source venv/bin/activate
+pip install pyserial llama-cpp-python
+chmod +x download_model.sh
+./download_model.sh
+python serial_llm_interface_lite.py --port /dev/ttyUSB0 --baudrate 9600 --model models/tinyllama-1.1b-chat-v1.0.Q4_K_M.gguf
+```
+
+On small Raspberry Pi systems, building or installing `llama-cpp-python` can be the hardest part of this path. The Codex CLI and Ollama paths avoid loading this GGUF model in Python.
+
+## Legacy Transformers Backend
+
+Use this only on systems with enough memory:
+
 ```bash
 python3 -m venv venv
 source venv/bin/activate
 pip install -r requirements.txt
-```
-
-2. **Run the program:**
-```bash
 python serial_llm_interface.py
 ```
 
-## Configuration
+## Testing Without Acorn Hardware
 
-### Serial Port Settings
-- Default port: `/dev/ttyUSB0` (Raspberry Pi)
-- Default baudrate: 115200
-- 8 data bits, no parity, 1 stop bit
+Use `socat` to create a pair of pseudo terminals:
 
-### Customize Settings
-
-For lite version:
 ```bash
-python serial_llm_interface_lite.py --port /dev/ttyUSB0 --baudrate 9600 --model path/to/model.gguf
+socat -d -d pty,raw,echo=0 pty,raw,echo=0
 ```
 
-For full version, edit the main() function in the script.
+In another terminal, run one backend with the first PTY path:
 
-## Usage
+```bash
+source venv/bin/activate
+python serial_codex_interface.py --port /dev/pts/X
+```
 
-1. Connect your serial device to the Raspberry Pi
-2. Run the program
-3. Send messages via serial (terminated with newline)
-4. Receive AI responses back through serial
-5. Check logs in the `logs/` directory for debugging
+In a third terminal, connect to the second PTY path:
 
-## Logging
+```bash
+screen /dev/pts/Y 9600
+```
 
-Both versions automatically create timestamped log files in the `logs/` directory:
-- Log files are named: `serial_llm_YYYYMMDD_HHMMSS.log`
-- Logs include all messages, responses, errors, and session statistics
-- Logs are written to both console and file simultaneously
-- Session summary shows total messages processed and error count
+The same PTY approach works for `arm_gpt_server.py` and `serial_llm_interface_lite.py`; pass the PTY with each script's serial-port option.
 
 ## Troubleshooting
 
-### Permission Denied on Serial Port
-```bash
-sudo usermod -a -G dialout $USER
-# Log out and back in
-```
+### Serial Port Does Not Open
 
-### Out of Memory
-- Use the lite version
-- Try a smaller quantized model (Q3_K_S instead of Q4_K_M)
-- Reduce context window in the code
+- Check the port path exists: `ls /dev/ttyUSB* /dev/serial0`
+- Check group permissions.
+- Confirm another process is not holding the port open.
+- Try the same baud rate on both machines.
 
-### Slow Response Time
-- This is normal on Raspberry Pi
-- Consider using a more powerful board or the lite version
-- Reduce max_tokens for shorter responses
+### Codex Backend Fails
 
-## Model Recommendations
+- Run `codex doctor`.
+- Check that `codex exec "hello"` works in the same shell.
+- Pass `--codex-command /path/to/codex` if the script cannot find the executable.
+- Increase `--timeout` if replies take longer than expected.
 
-For Raspberry Pi 4 (4GB):
-- TinyLlama Q4_K_M (best balance)
-- TinyLlama Q3_K_S (if memory constrained)
+### Ollama Backend Fails
 
-For Raspberry Pi 4 (8GB):
-- Can try the full version with TinyLlama
-- Or use larger quantized models with lite version
+- Confirm Ollama is running.
+- Confirm the chat and embedding models are pulled.
+- Rebuild the index with `python build_index.py`.
 
-## Testing
+### llama-cpp Backend Fails
 
-Test without hardware using socat:
-```bash
-# Terminal 1:
-socat -d -d pty,raw,echo=0 pty,raw,echo=0
+- Confirm the GGUF model path exists.
+- Confirm `llama-cpp-python` imports in the active virtual environment.
+- Use a smaller quantized model on memory-constrained hardware.
 
-# Terminal 2 (use the first PTY path from socat):
-source venv/bin/activate
-python serial_llm_interface_lite.py --port /dev/pts/X
+## Logging
 
-# Terminal 3 (use the second PTY path):
-screen /dev/pts/Y 115200
-```
+The active scripts write timestamped logs in `logs/` and print received serial bytes plus generated responses to the console.
