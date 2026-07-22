@@ -84,5 +84,5 @@ models/
 *.bin
 *.safetensors
 
-# Logs directory (commented out - we want to track logs)
-# logs/
+# Session logs (timestamped, generated on every run - not worth tracking)
+logs/*.log
