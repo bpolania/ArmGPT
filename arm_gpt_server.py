@@ -133,10 +133,103 @@ def ollama_chat(messages: List[Dict[str, str]], ollama_url: str, chat_model: str
         resp = requests.post(url, json=payload, timeout=120)
         resp.raise_for_status()
         data = resp.json()
+        log_ollama_timings(data)
         return data.get("message", {}).get("content", "").strip()
     except Exception as e:
         logger.error(f"Chat request failed: {e}")
         return ""
+
+
+def check_llamacpp(llama_url: str) -> bool:
+    """Verify llama-server is reachable and has finished loading its model."""
+    try:
+        resp = requests.get(f"{llama_url}/health", timeout=5)
+        if resp.status_code == 200:
+            logger.info(f"llama-server is reachable at {llama_url}")
+            return True
+        # 503 while the model is still loading
+        logger.error(f"llama-server not ready at {llama_url}: {resp.text.strip()}")
+        return False
+    except requests.ConnectionError:
+        pass
+    logger.error(f"Cannot reach llama-server at {llama_url}")
+    return False
+
+
+def llamacpp_chat(messages: List[Dict[str, str]], llama_url: str) -> str:
+    """
+    Send a chat completion request to llama-server's OpenAI-compatible endpoint.
+    The model is chosen when the server starts, so no model name is sent here.
+    """
+    url = f"{llama_url}/v1/chat/completions"
+    payload = {
+        "messages": messages,
+        "stream": False,
+    }
+    try:
+        resp = requests.post(url, json=payload, timeout=120)
+        resp.raise_for_status()
+        data = resp.json()
+        log_llamacpp_timings(data)
+
+        choices = data.get("choices", [])
+        if not choices:
+            logger.warning("No choices in llama-server response")
+            return ""
+        return choices[0].get("message", {}).get("content", "").strip()
+    except Exception as e:
+        logger.error(f"Chat request failed: {e}")
+        return ""
+
+
+def log_timings(prompt_tokens: Optional[int], prompt_s: Optional[float],
+                gen_tokens: Optional[int], gen_s: Optional[float]):
+    """Log prefill/decode split so we can see which half dominates."""
+    if prompt_tokens and prompt_s:
+        logger.info(
+            f"Prefill: {prompt_tokens} tokens in {prompt_s:.2f}s "
+            f"({prompt_tokens / prompt_s:.1f} tok/s)"
+        )
+        print(f"  Prefill: {prompt_tokens} tokens, {prompt_s:.2f}s ({prompt_tokens / prompt_s:.1f} tok/s)")
+
+    if gen_tokens and gen_s:
+        logger.info(
+            f"Decode: {gen_tokens} tokens in {gen_s:.2f}s "
+            f"({gen_tokens / gen_s:.1f} tok/s)"
+        )
+        print(f"  Decode:  {gen_tokens} tokens, {gen_s:.2f}s ({gen_tokens / gen_s:.1f} tok/s)")
+
+
+def log_ollama_timings(data: Dict[str, Any]):
+    """Ollama reports durations in nanoseconds."""
+    prompt_ns = data.get("prompt_eval_duration")
+    gen_ns = data.get("eval_duration")
+    log_timings(
+        data.get("prompt_eval_count"), prompt_ns / 1e9 if prompt_ns else None,
+        data.get("eval_count"), gen_ns / 1e9 if gen_ns else None,
+    )
+
+    load_ns = data.get("load_duration")
+    if load_ns:
+        logger.info(f"Model load: {load_ns / 1e9:.2f}s")
+
+
+def log_llamacpp_timings(data: Dict[str, Any]):
+    """llama-server reports durations in milliseconds under 'timings'."""
+    timings = data.get("timings")
+    if not isinstance(timings, dict):
+        return
+
+    prompt_ms = timings.get("prompt_ms")
+    gen_ms = timings.get("predicted_ms")
+    log_timings(
+        timings.get("prompt_n"), prompt_ms / 1000 if prompt_ms else None,
+        timings.get("predicted_n"), gen_ms / 1000 if gen_ms else None,
+    )
+
+    cached = timings.get("cache_n")
+    if cached:
+        logger.info(f"Prompt cache hit: {cached} tokens reused")
 
 
 # ─── RAG helpers ─────────────────────────────────────────────────
@@ -301,20 +394,32 @@ def send_serial_response(conn: serial.Serial, response: str):
 # ─── Main loop ───────────────────────────────────────────────────
 
 def run(port: str, baudrate: int, ollama_url: str,
-        chat_model: str, embed_model: str, index_path: str):
+        chat_model: str, embed_model: str, index_path: str,
+        backend: str, llama_url: str):
     """Main server loop."""
     logger.info("=" * 60)
     logger.info("Starting ArmGPT Server")
     logger.info(f"Port: {port}")
     logger.info(f"Baudrate: {baudrate}")
-    logger.info(f"Chat model: {chat_model}")
-    logger.info(f"Embed model: {embed_model}")
+    logger.info(f"Chat backend: {backend}")
+    if backend == 'llamacpp':
+        logger.info(f"llama-server: {llama_url}")
+    else:
+        logger.info(f"Chat model: {chat_model}")
+    logger.info(f"Embed model: {embed_model} (via Ollama)")
     logger.info(f"Index: {index_path}")
     logger.info("=" * 60)
 
-    # 1. Check Ollama
+    # 1. Check backends. Ollama is always needed — it serves the embeddings
+    #    for retrieval even when llama-server handles chat.
     if not check_ollama(ollama_url):
         logger.error("Ollama is not reachable. Please start Ollama and try again.")
+        return
+
+    if backend == 'llamacpp' and not check_llamacpp(llama_url):
+        logger.error("llama-server is not reachable. Start it with:")
+        logger.error("  ~/llama.cpp/build/bin/llama-server -m <model.gguf> "
+                     "-c 4096 -t 4 --host 127.0.0.1 --port 8080")
         return
 
     # 2. Load index
@@ -332,8 +437,11 @@ def run(port: str, baudrate: int, ollama_url: str,
 
     print(f"\nArmGPT Server is ready and listening!")
     print(f"Serial port: {port} at {baudrate} baud")
-    print(f"Chat model: {chat_model}")
-    print(f"Embed model: {embed_model}")
+    if backend == 'llamacpp':
+        print(f"Chat backend: llama.cpp at {llama_url}")
+    else:
+        print(f"Chat backend: Ollama, model {chat_model}")
+    print(f"Embed model: {embed_model} (via Ollama)")
     print(f"Index chunks: {len(index)}")
     print(f"Logs: {log_filename}")
     print(f"\n{'='*60}")
@@ -368,7 +476,7 @@ def run(port: str, baudrate: int, ollama_url: str,
                     else:
                         # Substantive query — use RAG
                         query_emb = embed_query(message, ollama_url, embed_model)
-                        context = retrieve_context(query_emb, index, top_k=5)
+                        context = retrieve_context(query_emb, index, top_k=3)
 
                         if context:
                             system_content = (
@@ -383,7 +491,10 @@ def run(port: str, baudrate: int, ollama_url: str,
                             {"role": "user", "content": message},
                         ]
 
-                    response = ollama_chat(messages, ollama_url, chat_model)
+                    if backend == 'llamacpp':
+                        response = llamacpp_chat(messages, llama_url)
+                    else:
+                        response = ollama_chat(messages, ollama_url, chat_model)
 
                     generation_time = time.time() - start_time
                     logger.info(f"Response generation completed in {generation_time:.2f} seconds")
@@ -433,6 +544,11 @@ def main():
                         help='Ollama API base URL (default: http://localhost:11434)')
     parser.add_argument('--index', default='data/arm_index.jsonl',
                         help='Path to JSONL vector index (default: data/arm_index.jsonl)')
+    parser.add_argument('--backend', choices=['ollama', 'llamacpp'], default='llamacpp',
+                        help='Chat backend (default: llamacpp — roughly 2x faster prefill '
+                             'on the Pi 5; embeddings always come from Ollama)')
+    parser.add_argument('--llama-url', default='http://127.0.0.1:8080',
+                        help='llama-server base URL (default: http://127.0.0.1:8080)')
 
     args = parser.parse_args()
 
@@ -446,6 +562,8 @@ def main():
         chat_model=args.chat_model,
         embed_model=args.embed_model,
         index_path=args.index,
+        backend=args.backend,
+        llama_url=args.llama_url,
     )
 
 
