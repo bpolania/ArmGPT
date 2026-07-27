@@ -18,6 +18,11 @@ import requests
 MAX_WORDS_PER_CHUNK = 220
 OVERLAP_WORDS = 40
 
+# Source documents to index. ARM_HISTORY.md is symlinked into the docs dir and
+# is the only source covering the Archimedes A310 — the machine on the other
+# end of the serial link — so markdown must be indexed alongside plain text.
+DOC_PATTERNS = ("*.txt", "*.md")
+
 
 def read_txt_file(path: str) -> str:
     with open(path, "r", encoding="utf-8", errors="ignore") as f:
@@ -90,10 +95,13 @@ def get_embedding(text: str, ollama_url: str, embed_model: str) -> List[float]:
 
 def build_index(docs_dir: str, output: str, ollama_url: str, embed_model: str) -> None:
     print(f"Scanning documents in {docs_dir} ...")
-    txt_paths = sorted(glob.glob(os.path.join(docs_dir, "*.txt")))
+    txt_paths = sorted(
+        p for pattern in DOC_PATTERNS
+        for p in glob.glob(os.path.join(docs_dir, pattern))
+    )
 
     if not txt_paths:
-        print("[WARN] No .txt files found in", docs_dir)
+        print(f"[WARN] No {'/'.join(DOC_PATTERNS)} files found in", docs_dir)
         return
 
     all_chunks: List[Dict[str, Any]] = []
