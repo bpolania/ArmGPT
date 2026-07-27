@@ -59,6 +59,11 @@ You may be given documentation context about ARM, Acorn, Archimedes, RISC OS, an
 Either way, answer the question naturally and directly. Never mention the documentation, the context, or whether it covered the question, and never say things like "the docs don't cover this" or "the provided history doesn't mention that" - the user cannot see any of that and does not need to know it exists. Just give the answer.
 """
 
+# Source documents to ground replies in. ARM_HISTORY.md is symlinked into the
+# docs dir and is the only source covering the Archimedes A310 — the machine on
+# the other end of the serial link — so markdown must be read alongside .txt.
+DOC_PATTERNS = ("*.txt", "*.md")
+
 STOPWORDS = {
     "a",
     "an",
@@ -168,7 +173,10 @@ class SerialCodexInterface:
 
     def load_doc_chunks(self) -> List[Dict[str, object]]:
         docs_path = self.resolve_path(self.docs_dir)
-        paths = sorted(glob.glob(os.path.join(docs_path, "*.txt")))
+        paths = sorted(
+            p for pattern in DOC_PATTERNS
+            for p in glob.glob(os.path.join(docs_path, pattern))
+        )
         chunks: List[Dict[str, object]] = []
 
         if not paths:
