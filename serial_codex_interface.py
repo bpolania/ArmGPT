@@ -64,6 +64,12 @@ Either way, answer the question naturally and directly. Never mention the docume
 # the other end of the serial link — so markdown must be read alongside .txt.
 DOC_PATTERNS = ("*.txt", "*.md")
 
+# Retrieved chunks are joined by a blank line, and a chunk is only worth
+# including if enough of its text survives truncation to actually ground an
+# answer.
+CONTEXT_SEPARATOR = "\n\n"
+MIN_CHUNK_CHARS = 200
+
 STOPWORDS = {
     "a",
     "an",
@@ -269,18 +275,25 @@ class SerialCodexInterface:
             source = str(chunk.get("source", "unknown"))
             chunk_id = chunk.get("chunk_id", "?")
             text = str(chunk.get("text", "")).strip()
-            entry = f"[{source} chunk {chunk_id}, score {score}]\n{text}"
+            header = f"[{source} chunk {chunk_id}, score {score}]\n"
+            entry = header + text
 
-            remaining = self.max_context_chars - total_chars
-            if remaining <= 0:
+            # Entries are joined with a blank line, so that has to come out of
+            # the budget too or the context overruns max_context_chars.
+            separator = len(CONTEXT_SEPARATOR) if parts else 0
+            remaining = self.max_context_chars - total_chars - separator
+
+            # Slicing to less than the header plus some text leaves a dangling
+            # "[source chunk..." fragment: tokens spent, no grounding gained.
+            if remaining < len(header) + MIN_CHUNK_CHARS:
                 break
             if len(entry) > remaining:
                 entry = entry[:remaining].rsplit(" ", 1)[0].strip()
 
             parts.append(entry)
-            total_chars += len(entry)
+            total_chars += len(entry) + separator
 
-        return "\n\n".join(parts)
+        return CONTEXT_SEPARATOR.join(parts)
 
     def init_serial(self) -> bool:
         try:
