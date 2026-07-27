@@ -232,6 +232,93 @@ def log_llamacpp_timings(data: Dict[str, Any]):
         logger.info(f"Prompt cache hit: {cached} tokens reused")
 
 
+# ─── Keyword scoring ─────────────────────────────────────────────
+#
+# Cosine similarity alone ranks an employee questionnaire from ARM25.txt
+# ("Favorite movie", "Star Trek or Star Wars") above genuine Archimedes A310
+# history, because chatty Q&A text embeds close to a conversational question
+# and 73% of the corpus is that one book. Scores across the whole index span
+# only ~0.14, so ranking is barely above noise. Keyword overlap breaks the tie.
+# Ported from serial_codex_interface.py, which already scores this way.
+
+STOPWORDS = {
+    "a", "an", "and", "are", "as", "at", "be", "by", "for", "from", "how", "i",
+    "in", "is", "it", "me", "of", "on", "or", "that", "the", "this", "to", "was",
+    "were", "what", "when", "where", "which", "who", "why", "with", "you",
+}
+
+# Weight applied to the normalised keyword score. Matched to the ~0.15 spread of
+# cosine scores across the corpus, so a best-in-index keyword match can overturn
+# a cosine ranking but a partial one only nudges it.
+KEYWORD_WEIGHT = 0.15
+
+PHRASE_BOOSTS = [
+    ("sophie wilson", 4),
+    ("steve furber", 4),
+    ("acorn archimedes", 3),
+    ("risc based home computer", 3),
+    ("risc-based home computer", 3),
+    ("arm1", 2),
+    ("arm2", 2),
+    ("a310", 3),
+]
+
+
+def tokenize(text: str) -> List[str]:
+    """Lowercase word tokens, minus stopwords and single characters."""
+    return [
+        token
+        for token in re.findall(r"[a-z0-9][a-z0-9']+", text.lower())
+        if token not in STOPWORDS and len(token) > 1
+    ]
+
+
+def expand_query_tokens(message: str, tokens: List[str]) -> List[str]:
+    """Add domain synonyms so 'who made ARM?' can reach 'Sophie Wilson'."""
+    expanded = list(tokens)
+    token_set = set(tokens)
+    msg = message.lower()
+
+    if "arm" in token_set and any(w in token_set for w in ["created", "invented", "designed"]):
+        expanded.extend(["sophie", "wilson", "steve", "furber"])
+
+    if "arm" in token_set and any(w in token_set for w in ["origin", "origins", "history"]):
+        expanded.extend(["acorn", "sophie", "wilson", "steve", "furber"])
+
+    if "archimedes" in token_set or "a310" in token_set or "a310" in msg:
+        expanded.extend(["archimedes", "a310", "risc", "home", "computer"])
+
+    return expanded
+
+
+def keyword_score(query_tokens: List[str], message: str, chunk: Dict[str, Any]) -> int:
+    """Count query/chunk token overlap, with boosts for key ArmGPT phrases."""
+    token_set = chunk.get("_tokens")
+    if not isinstance(token_set, set):
+        return 0
+
+    score = len(set(query_tokens) & token_set)
+    searchable = chunk.get("_search", "")
+    msg = message.lower()
+
+    for token in query_tokens:
+        if token in token_set:
+            score += query_tokens.count(token) - 1
+
+    for phrase, boost in PHRASE_BOOSTS:
+        if phrase in searchable:
+            score += boost
+
+    if "who" in msg and any(w in msg for w in ["created", "invented", "designed"]):
+        if "sophie" in token_set or "furber" in token_set:
+            score += 6
+
+    if ("archimedes" in msg or "a310" in msg) and ("archimedes" in token_set or "a310" in token_set):
+        score += 5
+
+    return score
+
+
 # ─── RAG helpers ─────────────────────────────────────────────────
 
 def cosine_similarity(a: List[float], b: List[float]) -> float:
@@ -245,7 +332,7 @@ def cosine_similarity(a: List[float], b: List[float]) -> float:
 
 
 def load_index(index_path: str) -> List[Dict[str, Any]]:
-    """Load the JSONL vector index from disk."""
+    """Load the JSONL vector index from disk, precomputing keyword-match data."""
     chunks: List[Dict[str, Any]] = []
     if not os.path.exists(index_path):
         logger.error(f"Index file not found: {index_path}")
@@ -254,34 +341,56 @@ def load_index(index_path: str) -> List[Dict[str, Any]]:
         for line in f:
             line = line.strip()
             if line:
-                chunks.append(json.loads(line))
+                chunk = json.loads(line)
+                # Precomputed once at startup — tokenising 400 chunks per query
+                # would cost more than the embedding call it supplements.
+                source = chunk.get("source", "").replace("_", " ")
+                text = chunk.get("text", "")
+                chunk["_tokens"] = set(tokenize(source + " " + text))
+                chunk["_search"] = (source + " " + text).lower()
+                chunks.append(chunk)
     logger.info(f"Loaded {len(chunks)} chunks from {index_path}")
     return chunks
 
 
 def retrieve_context(query_embedding: Optional[List[float]],
                      index: List[Dict[str, Any]],
+                     message: str = "",
                      top_k: int = 5) -> str:
     """
-    Retrieve the top-K most relevant chunks.
-    Falls back to first K chunks if query_embedding is None.
+    Retrieve the top-K most relevant chunks by blended cosine + keyword score.
+    Degrades to whichever signal is available: keyword-only if the embedding
+    failed, cosine-only if the query has no usable keywords.
     """
     if not index:
         return ""
 
-    if query_embedding is None:
-        # Fallback: return the first K chunks
-        logger.warning("No query embedding; falling back to first %d chunks", top_k)
+    query_tokens = expand_query_tokens(message, tokenize(message)) if message else []
+    kw_scores = [keyword_score(query_tokens, message, c) for c in index] if query_tokens \
+        else [0] * len(index)
+    max_kw = max(kw_scores) if kw_scores else 0
+
+    if query_embedding is None and not max_kw:
+        # No signal at all — first K chunks is arbitrary but better than nothing
+        logger.warning(f"No query embedding or keyword match; using first {top_k} chunks")
         selected = index[:top_k]
     else:
         scored = []
-        for chunk in index:
-            emb = chunk.get("embedding", [])
-            if emb:
-                score = cosine_similarity(query_embedding, emb)
-                scored.append((score, chunk))
+        for chunk, kw in zip(index, kw_scores):
+            emb = chunk.get("embedding") or []
+            cos = cosine_similarity(query_embedding, emb) if (query_embedding and emb) else 0.0
+            # Normalise the keyword score against the best match for this query so
+            # the weight means the same thing regardless of query length.
+            kw_norm = (kw / max_kw) if max_kw else 0.0
+            scored.append((cos + KEYWORD_WEIGHT * kw_norm, cos, kw, chunk))
+
         scored.sort(key=lambda x: x[0], reverse=True)
-        selected = [c for _, c in scored[:top_k]]
+        for total, cos, kw, chunk in scored[:top_k]:
+            logger.info(
+                f"Retrieved {chunk.get('source','?')} chunk {chunk.get('chunk_id','?')}: "
+                f"score {total:.4f} (cosine {cos:.4f}, keyword {kw})"
+            )
+        selected = [c for _, _, _, c in scored[:top_k]]
 
     parts = []
     for chunk in selected:
@@ -476,7 +585,7 @@ def run(port: str, baudrate: int, ollama_url: str,
                     else:
                         # Substantive query — use RAG
                         query_emb = embed_query(message, ollama_url, embed_model)
-                        context = retrieve_context(query_emb, index, top_k=3)
+                        context = retrieve_context(query_emb, index, message, top_k=3)
 
                         if context:
                             system_content = (
