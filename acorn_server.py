@@ -433,15 +433,36 @@ def read_serial_message(conn: Any, processing: bool) -> Optional[str]:
         return None
 
 
+# The model reaches for typographic characters ("I’m", "1987 — the year"). A
+# 7-bit line cannot carry them, and as UTF-8 they arrive as multi-byte garbage,
+# so fold them down to their ASCII equivalents before transmitting.
+ASCII_FOLD = {
+    '‘': "'", '’': "'", '‚': "'", '‛': "'",
+    '“': '"', '”': '"', '„': '"',
+    '–': '-', '—': '-', '−': '-',
+    '…': '...', ' ': ' ', '•': '*',
+}
+
+
+def to_ascii(text: str) -> str:
+    """Flatten to 7-bit-safe ASCII for the serial link."""
+    for uni, plain in ASCII_FOLD.items():
+        text = text.replace(uni, plain)
+    return text.encode('ascii', errors='replace').decode('ascii')
+
+
 def send_serial_response(conn: Any, response: str) -> None:
     try:
-        response_bytes = (response + "\n").encode("utf-8")
+        ascii_response = to_ascii(response)
+        if ascii_response != response:
+            logger.info("Response folded to ASCII for the 7-bit serial line")
+        response_bytes = (ascii_response + "\n").encode("ascii")
         conn.write(response_bytes)
         conn.flush()
-        logger.info("Response sent: %s", response)
+        logger.info("Response sent: %s", ascii_response)
 
         print("\nARMGPT RESPONSE TO ACORN:")
-        print(f"    {response}")
+        print(f"    {ascii_response}")
         print("-" * 60 + "\n")
     except Exception as e:
         logger.error("Error sending response: %s", e)
