@@ -19,10 +19,11 @@ import os
 import re
 import sys
 import time
+import unicodedata
 from datetime import datetime
 from typing import Any, Dict, List, Optional, Tuple
 
-from serial_codex_interface import SerialCodexInterface
+from serial_codex_interface import SANDBOX_MODES, SerialCodexInterface
 
 
 SERIAL_PORTS = {
@@ -282,6 +283,7 @@ class CodexCliBackend:
         top_k: int,
         timeout: int,
         extra_args: Optional[List[str]] = None,
+        sandbox: str = "read-only",
     ):
         self.interface = SerialCodexInterface(
             codex_command=codex_command,
@@ -292,6 +294,7 @@ class CodexCliBackend:
             top_k=top_k,
             timeout=timeout,
             extra_args=extra_args or [],
+            sandbox=sandbox,
         )
         self._available: Optional[bool] = None
 
@@ -441,14 +444,18 @@ def read_serial_message(conn: Any, processing: bool) -> Optional[str]:
         return None
 
 
-# The model reaches for typographic characters ("I’m", "1987 — the year"). A
-# 7-bit line cannot carry them, and as UTF-8 they arrive as multi-byte garbage,
-# so fold them down to their ASCII equivalents before transmitting.
+# The model reaches for typographic characters ("I’m", "1987 — the year",
+# "24°C"). A 7-bit line cannot carry them, and as UTF-8 they arrive as
+# multi-byte garbage, so fold them to ASCII equivalents before transmitting.
+# Dashes get surrounding spaces because an em dash is used unspaced in prose
+# and a bare hyphen would run the words together ("changeable-best").
 ASCII_FOLD = {
     '‘': "'", '’': "'", '‚': "'", '‛': "'",
     '“': '"', '”': '"', '„': '"',
-    '–': '-', '—': '-', '−': '-',
-    '…': '...', ' ': ' ', '•': '*',
+    '–': ' - ', '—': ' - ', '−': '-',
+    '…': '...', ' ': ' ', '•': '*',
+    '°': '', '×': 'x', '÷': '/', '±': '+/-',
+    '£': 'GBP', '€': 'EUR', '™': '(TM)', '©': '(C)', '®': '(R)',
 }
 
 
@@ -456,6 +463,10 @@ def to_ascii(text: str) -> str:
     """Flatten to 7-bit-safe ASCII for the serial link."""
     for uni, plain in ASCII_FOLD.items():
         text = text.replace(uni, plain)
+    # Decompose what is left so accents drop to their base letter (café -> cafe)
+    # instead of the whole character being lost to '?'.
+    text = ''.join(c for c in unicodedata.normalize('NFKD', text)
+                   if not unicodedata.combining(c))
     return text.encode('ascii', errors='replace').decode('ascii')
 
 
@@ -602,6 +613,13 @@ def main() -> None:
         default=[],
         help="Extra argument to pass to `codex exec`; repeat for multiple args",
     )
+    parser.add_argument(
+        "--codex-sandbox",
+        choices=SANDBOX_MODES,
+        default="read-only",
+        help="Codex sandbox policy. danger-full-access lets anything arriving on the "
+             "serial line run unsandboxed shell commands with network access",
+    )
 
     args = parser.parse_args()
     setup_logging()
@@ -622,6 +640,7 @@ def main() -> None:
         top_k=args.codex_top_k,
         timeout=args.codex_timeout,
         extra_args=args.codex_arg,
+        sandbox=args.codex_sandbox,
     )
 
     run(

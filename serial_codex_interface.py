@@ -52,10 +52,29 @@ BASE_SYSTEM_PROMPT = """You are ArmGPT, a friendly and knowledgeable AI assistan
 
 Reply as ArmGPT, not as a coding assistant. Keep replies short because the user is reading them on a serial terminal. Aim for one or two concise sentences. Be warm, gentle, and interested in Acorn and retro computing.
 
-Do not edit files, run shell commands, or inspect the repository. Just answer the user's message conversationally.
+{capabilities}
 
 Use the provided repository documentation context as your primary source for ARM, Acorn, Archimedes, RISC OS, and ArmGPT history. If the context is relevant, ground your answer in it. If it does not cover the question, answer from general knowledge anyway — do not mention the context, and do not preface the answer with a caveat about what the documentation does or does not contain. Just give the answer.
 """
+
+# Sandboxed runs cannot reach the network or write anything, so telling the
+# model to try would only waste a round trip on a command that must fail.
+CAPABILITIES_SANDBOXED = (
+    "Do not edit files, run shell commands, or inspect the repository. "
+    "Just answer the user's message conversationally."
+)
+
+# With the sandbox off the shell is genuinely available, so live lookups work.
+CAPABILITIES_FULL_ACCESS = (
+    "You may run read-only shell commands when a question needs live information "
+    "the documentation cannot supply -- current weather, today's date, network "
+    "lookups. Prefer answering from knowledge; reach for the shell only when the "
+    "question actually requires fresh data. Never modify or delete anything, and "
+    "report the result in one or two short sentences rather than showing raw "
+    "command output."
+)
+
+SANDBOX_MODES = ("read-only", "workspace-write", "danger-full-access")
 
 STOPWORDS = {
     "a",
@@ -107,6 +126,7 @@ class SerialCodexInterface:
         top_k: int = 4,
         timeout: int = 180,
         extra_args: Optional[List[str]] = None,
+        sandbox: str = "read-only",
     ):
         self.port = port
         self.baudrate = baudrate
@@ -118,6 +138,7 @@ class SerialCodexInterface:
         self.top_k = top_k
         self.timeout = timeout
         self.extra_args = extra_args or []
+        self.sandbox = sandbox
         self.serial_conn = None
         self.serial_module = None
         self.processing = False
@@ -314,7 +335,10 @@ class SerialCodexInterface:
 
     def format_prompt(self, message: str) -> str:
         context = self.retrieve_doc_context(message)
-        prompt_parts = [BASE_SYSTEM_PROMPT]
+        capabilities = (CAPABILITIES_FULL_ACCESS
+                        if self.sandbox == "danger-full-access"
+                        else CAPABILITIES_SANDBOXED)
+        prompt_parts = [BASE_SYSTEM_PROMPT.format(capabilities=capabilities)]
         if context:
             prompt_parts.append("Relevant repository documentation context from data/arm_docs:\n" + context)
         prompt_parts.append("User message from the Acorn serial terminal:\n" + message)
@@ -325,7 +349,7 @@ class SerialCodexInterface:
             self.codex_command,
             "exec",
             "--sandbox",
-            "read-only",
+            self.sandbox,
             "--skip-git-repo-check",
             "--cd",
             self.codex_cwd,
@@ -523,6 +547,13 @@ def main() -> None:
         default=[],
         help="Extra argument to pass to `codex exec`; repeat for multiple args",
     )
+    parser.add_argument(
+        "--codex-sandbox",
+        choices=SANDBOX_MODES,
+        default="read-only",
+        help="Codex sandbox policy. danger-full-access lets anything arriving on the "
+             "serial line run unsandboxed shell commands with network access",
+    )
 
     args = parser.parse_args()
     setup_logging()
@@ -538,6 +569,7 @@ def main() -> None:
         top_k=args.top_k,
         timeout=args.timeout,
         extra_args=args.codex_arg,
+        sandbox=args.codex_sandbox,
     )
     interface.run()
 
