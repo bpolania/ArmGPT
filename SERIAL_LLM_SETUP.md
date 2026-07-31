@@ -153,7 +153,7 @@ Behavior notes:
 - The script calls `codex exec` once per serial message.
 - Codex receives an ArmGPT personality prompt plus the user message.
 - The prompt includes lightweight retrieved context from `data/arm_docs/*.txt`.
-- Codex is invoked with `--sandbox read-only`, `--ask-for-approval never`, and `--ephemeral`.
+- Codex is invoked with `--sandbox read-only` and `--skip-git-repo-check`.
 - The script captures Codex's final answer with `--output-last-message`.
 - This backend depends on the host's Codex CLI login and availability.
 

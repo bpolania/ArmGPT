@@ -118,7 +118,7 @@ python serial_codex_interface.py --codex-cwd /path/to/ArmGPT
 python serial_codex_interface.py --docs-dir data/arm_docs --top-k 4 --max-context-chars 3600
 ```
 
-The Codex runner invokes `codex exec` with a read-only sandbox, no command approvals, `--ephemeral`, and an ArmGPT prompt that tells Codex to answer conversationally rather than edit files. It uses lightweight keyword retrieval over `data/arm_docs`, so it does not require the Ollama vector index.
+The Codex runner invokes `codex exec` with a read-only sandbox and `--skip-git-repo-check`, plus an ArmGPT prompt that tells Codex to answer conversationally rather than edit files. It uses lightweight keyword retrieval over `data/arm_docs`, so it does not require the Ollama vector index.
 
 ## Legacy llama-cpp Interface
 
