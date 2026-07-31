@@ -6,13 +6,13 @@ ArmGPT connects an Acorn or Archimedes computer to an AI assistant over a serial
 
 | Backend | Script | Best for | Inference path |
 |---------|--------|----------|----------------|
-| Unified server | `acorn_server.py` | Switching between local and Codex from the Acorn | Routes to Ollama or Codex CLI per message |
+| Unified server | `acorn_server.py` | Switching between local and cloud from the Acorn | Routes to Ollama or the cloud backend per message |
 | Ollama with RAG | `arm_gpt_server.py` | Normal local setup with ARM history grounding | Local Ollama chat and embedding models |
 | Codex CLI | `serial_codex_interface.py` | Using an existing Codex CLI login instead of a local model | Shells out to `codex exec` |
 | llama-cpp legacy | `serial_llm_interface_lite.py` | Offline GGUF model on limited hardware | Local `llama-cpp-python` model |
 | Transformers legacy | `serial_llm_interface.py` | Systems with more RAM | Local Hugging Face Transformers model |
 
-The unified server is the preferred entry point when you want to choose the backend from the Acorn. The Ollama and Codex scripts remain useful for testing one backend directly.
+The unified server is the preferred entry point when you want to choose the backend from the Acorn. The Ollama and Codex CLI scripts remain useful for testing one backend directly.
 
 ## Common Setup
 
@@ -30,21 +30,21 @@ The unified server listens on one serial port and lets the Acorn choose the back
 
 ```bash
 python acorn_server.py usb --default-backend local
-python acorn_server.py serial --default-backend codex
+python acorn_server.py serial --default-backend cloud
 ```
 
 Runtime commands from the Acorn:
 
 ```text
 /mode local
-/mode codex
+/mode cloud
 /local Tell me about Sophie Wilson.
-/codex Tell me about the Acorn Archimedes.
+/cloud Tell me about the Acorn Archimedes.
 /status
 /help
 ```
 
-Plain messages use the current mode. `/local <prompt>` and `/codex <prompt>` are one-shot overrides that do not change the current mode.
+Plain messages use the current mode. `/local <prompt>` and `/cloud <prompt>` are one-shot overrides that do not change the current mode.
 
 Useful options:
 
@@ -149,7 +149,7 @@ python serial_llm_interface.py
 | `usb` or `serial` | Yes | none | `usb` = `/dev/ttyUSB0`, `serial` = `/dev/serial0` |
 | `--port-path` | No | unset | Explicit serial path; overrides shortcut |
 | `--baudrate` | No | `9600` | Baud rate |
-| `--default-backend` | No | `local` | Backend for plain messages: `local` or `codex` |
+| `--default-backend` | No | `local` | Backend for plain messages: `local` or `cloud` |
 | `--ollama-url` | No | `http://localhost:11434` | Ollama API base URL |
 | `--chat-model` | No | `qwen2.5:1.5b` | Ollama chat model |
 | `--embed-model` | No | `nomic-embed-text` | Ollama embedding model |

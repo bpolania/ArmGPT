@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 """
-Acorn Server - unified serial bridge for local Ollama and Codex CLI backends.
+Acorn Server - unified serial bridge for local Ollama and cloud backends.
 
 Runtime commands from the Acorn serial terminal:
   /mode local      Switch future messages to the local Ollama backend
-  /mode codex      Switch future messages to the Codex CLI backend
+  /mode cloud      Switch future messages to the cloud backend
   /local <prompt>  Use the local backend for this message only
-  /codex <prompt>  Use the Codex backend for this message only
+  /cloud <prompt>  Use the cloud backend for this message only
   /status          Show current backend status
   /help            Show command summary
 """
@@ -30,7 +30,10 @@ SERIAL_PORTS = {
     "serial": "/dev/serial0",
 }
 
-BACKENDS = {"local", "codex"}
+BACKENDS = {"local", "cloud"}
+BACKEND_ALIASES = {
+    "codex": "cloud",
+}
 
 logger = logging.getLogger(__name__)
 log_filename = ""
@@ -229,7 +232,7 @@ class LocalOllamaBackend:
 
     def generate(self, message: str) -> str:
         if self._reachable is not True and not self.check_available():
-            return "Local Ollama is not reachable. Try /mode codex or start Ollama."
+            return "Local Ollama is not reachable. Try /mode cloud or start Ollama."
 
         if is_conversational(message):
             messages = [
@@ -298,7 +301,7 @@ class CodexCliBackend:
 
     def generate(self, message: str) -> str:
         if self._available is not True and not self.check_available():
-            return "Codex CLI is not available. Try /mode local or check codex."
+            return "Cloud backend is not available. Try /mode local or check the cloud backend."
         return self.interface.generate_response(message)
 
     def status(self) -> str:
@@ -309,13 +312,16 @@ class CodexCliBackend:
             available = "no"
         model = self.interface.codex_model or "config default"
         return (
-            f"codex: command {self.interface.codex_command}, model {model}, "
+            f"cloud: command {self.interface.codex_command}, model {model}, "
             f"available {available}, doc chunks {len(self.interface.doc_chunks)}"
         )
 
 
 class CommandRouter:
     def __init__(self, default_backend: str):
+        default_backend = BACKEND_ALIASES.get(default_backend, default_backend)
+        if default_backend not in BACKENDS:
+            raise ValueError("default backend must be local or cloud")
         self.current_backend = default_backend
 
     def handle(
@@ -340,14 +346,16 @@ class CommandRouter:
         mode_match = re.match(r"^/mode\s+(\w+)\s*$", message, flags=re.IGNORECASE)
         if mode_match:
             backend = mode_match.group(1).lower()
+            backend = BACKEND_ALIASES.get(backend, backend)
             if backend not in BACKENDS:
-                return None, None, "Unknown mode. Use /mode local or /mode codex."
+                return None, None, "Unknown mode. Use /mode local or /mode cloud."
             self.current_backend = backend
             return None, None, f"Mode set to {backend}."
 
-        one_shot_match = re.match(r"^/(local|codex)\b(?:\s+(.*))?$", message, flags=re.IGNORECASE | re.DOTALL)
+        one_shot_match = re.match(r"^/(local|cloud|codex)\b(?:\s+(.*))?$", message, flags=re.IGNORECASE | re.DOTALL)
         if one_shot_match:
             backend = one_shot_match.group(1).lower()
+            backend = BACKEND_ALIASES.get(backend, backend)
             prompt = (one_shot_match.group(2) or "").strip()
             if not prompt:
                 return None, None, f"Usage: /{backend} your question"
@@ -360,8 +368,8 @@ class CommandRouter:
 
     def help_text(self) -> str:
         return (
-            "Commands: /mode local, /mode codex, /local <q>, "
-            "/codex <q>, /status. Plain text uses current mode."
+            "Commands: /mode local, /mode cloud, /local <q>, "
+            "/cloud <q>, /status. Plain text uses current mode."
         )
 
     def status_text(self, local_backend: LocalOllamaBackend, codex_backend: CodexCliBackend) -> str:
@@ -490,14 +498,14 @@ def run(
 
     if default_backend == "local":
         local_backend.check_available()
-    elif default_backend == "codex":
+    elif default_backend == "cloud":
         codex_backend.check_available()
 
     print("\nAcorn Server is ready and listening.")
     print(f"Serial port: {port} at {baudrate} baud")
     print(f"Default mode: {default_backend}")
     print(f"Logs: {log_filename}")
-    print("Commands: /mode local, /mode codex, /local <q>, /codex <q>, /status")
+    print("Commands: /mode local, /mode cloud, /local <q>, /cloud <q>, /status")
     print("\n" + "=" * 60)
     print("  Waiting for messages from Acorn...")
     print("=" * 60 + "\n")
@@ -525,8 +533,8 @@ def run(
                     elif backend_name == "local" and prompt is not None:
                         logger.info("Routing message #%d to local backend", message_count)
                         response = local_backend.generate(prompt)
-                    elif backend_name == "codex" and prompt is not None:
-                        logger.info("Routing message #%d to Codex backend", message_count)
+                    elif backend_name == "cloud" and prompt is not None:
+                        logger.info("Routing message #%d to cloud backend", message_count)
                         response = codex_backend.generate(prompt)
                     else:
                         response = "I could not route that message. Try /help."

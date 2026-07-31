@@ -12,7 +12,7 @@ This guide covers the serial side of ArmGPT and the available AI backends.
 | llama-cpp legacy | `serial_llm_interface_lite.py` | `pyserial`, `llama-cpp-python`, local GGUF model |
 | Transformers legacy | `serial_llm_interface.py` | `requirements.txt`, enough RAM for Transformers |
 
-Use `acorn_server.py` when you want to switch between local Ollama and Codex from the Acorn terminal. Use the direct backend scripts when you want to test only one backend.
+Use `acorn_server.py` when you want to switch between local Ollama and cloud from the Acorn terminal. Use the direct backend scripts when you want to test only one backend.
 
 ## Serial Port Setup
 
@@ -65,7 +65,7 @@ ollama pull nomic-embed-text
 python build_index.py
 ```
 
-Verify Codex if you want `/mode codex`:
+Verify Codex if you want `/mode cloud`:
 
 ```bash
 codex --version
@@ -76,21 +76,21 @@ Run:
 
 ```bash
 python acorn_server.py usb --default-backend local
-python acorn_server.py serial --default-backend codex
+python acorn_server.py serial --default-backend cloud
 ```
 
 Commands from the Acorn:
 
 ```text
 /mode local
-/mode codex
+/mode cloud
 /local Tell me about Sophie Wilson.
-/codex Tell me about the Acorn Archimedes.
+/cloud Tell me about the Acorn Archimedes.
 /status
 /help
 ```
 
-Plain messages use the current mode. `/local <prompt>` and `/codex <prompt>` are one-shot backend overrides.
+Plain messages use the current mode. `/local <prompt>` and `/cloud <prompt>` are one-shot backend overrides.
 
 Useful options:
 
@@ -101,7 +101,7 @@ python acorn_server.py usb --docs-dir data/arm_docs --codex-top-k 4 --max-contex
 python acorn_server.py usb --port-path /dev/pts/X
 ```
 
-The generated Ollama RAG index is `data/arm_index.jsonl`. If the index is missing, the local backend still runs, but ARM documentation retrieval for Ollama will be unavailable. Codex grounding uses `data/arm_docs/*.txt` directly.
+The generated Ollama RAG index is `data/arm_index.jsonl`. If the index is missing, the local backend still runs, but ARM documentation retrieval for Ollama will be unavailable. Cloud grounding uses `data/arm_docs/*.txt` directly.
 
 ## Direct Ollama Backend
 
