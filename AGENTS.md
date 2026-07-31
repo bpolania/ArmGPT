@@ -13,11 +13,13 @@ ArmGPT bridges Acorn and Archimedes serial terminals to AI backends. User-facing
 
 ## Backend Notes
 
+- `acorn_server.py` is the unified serial entry point and routes messages to local Ollama or Codex CLI with Acorn-side commands.
 - `arm_gpt_server.py` uses Ollama chat plus embeddings and `data/arm_index.jsonl`.
 - `serial_codex_interface.py` shells out to `codex exec` and retrieves lightweight context directly from `data/arm_docs`.
 - `serial_llm_interface_lite.py` and `serial_llm_interface.py` are legacy local-model paths.
 
 ## Verification
 
-- Run `python3 -m py_compile arm_gpt_server.py build_index.py serial_codex_interface.py serial_llm_interface.py serial_llm_interface_lite.py` after Python changes.
+- Run `python3 -m py_compile acorn_server.py arm_gpt_server.py build_index.py serial_codex_interface.py serial_llm_interface.py serial_llm_interface_lite.py` after Python changes.
+- Run `python3 acorn_server.py --help` after changing the unified server.
 - Run `python3 serial_codex_interface.py --help` after changing the Codex CLI runner.

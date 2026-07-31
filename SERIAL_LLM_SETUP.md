@@ -6,12 +6,13 @@ This guide covers the serial side of ArmGPT and the available AI backends.
 
 | Backend | Script | Install profile |
 |---------|--------|-----------------|
+| Unified server | `acorn_server.py` | `requirements-lite.txt`, optional Ollama, optional Codex CLI |
 | Ollama with RAG | `arm_gpt_server.py` | `requirements-lite.txt`, Ollama, `qwen2.5:1.5b`, `nomic-embed-text` |
 | Codex CLI | `serial_codex_interface.py` | `requirements-lite.txt`, installed and logged-in Codex CLI |
 | llama-cpp legacy | `serial_llm_interface_lite.py` | `pyserial`, `llama-cpp-python`, local GGUF model |
 | Transformers legacy | `serial_llm_interface.py` | `requirements.txt`, enough RAM for Transformers |
 
-Use the Ollama backend for local RAG-grounded answers. Use the Codex CLI backend when you want to reuse a Codex CLI session instead of running a local model.
+Use `acorn_server.py` when you want to switch between local Ollama and Codex from the Acorn terminal. Use the direct backend scripts when you want to test only one backend.
 
 ## Serial Port Setup
 
@@ -46,7 +47,7 @@ Log out and back in after changing groups.
 - Baud rate used by the scripts: `9600`
 - Serial framing: 8 data bits, no parity, 1 stop bit
 
-## Ollama Backend
+## Unified Server
 
 Install Python dependencies:
 
@@ -56,7 +57,7 @@ source venv/bin/activate
 pip install -r requirements-lite.txt
 ```
 
-Prepare Ollama:
+Prepare local Ollama if you want `/mode local`:
 
 ```bash
 ollama pull qwen2.5:1.5b
@@ -64,18 +65,54 @@ ollama pull nomic-embed-text
 python build_index.py
 ```
 
+Verify Codex if you want `/mode codex`:
+
+```bash
+codex --version
+codex doctor
+```
+
 Run:
+
+```bash
+python acorn_server.py usb --default-backend local
+python acorn_server.py serial --default-backend codex
+```
+
+Commands from the Acorn:
+
+```text
+/mode local
+/mode codex
+/local Tell me about Sophie Wilson.
+/codex Tell me about the Acorn Archimedes.
+/status
+/help
+```
+
+Plain messages use the current mode. `/local <prompt>` and `/codex <prompt>` are one-shot backend overrides.
+
+Useful options:
+
+```bash
+python acorn_server.py usb --chat-model qwen2.5:1.5b --index data/arm_index.jsonl
+python acorn_server.py usb --codex-model gpt-5 --codex-timeout 240
+python acorn_server.py usb --docs-dir data/arm_docs --codex-top-k 4 --max-context-chars 3600
+python acorn_server.py usb --port-path /dev/pts/X
+```
+
+The generated Ollama RAG index is `data/arm_index.jsonl`. If the index is missing, the local backend still runs, but ARM documentation retrieval for Ollama will be unavailable. Codex grounding uses `data/arm_docs/*.txt` directly.
+
+## Direct Ollama Backend
 
 ```bash
 python arm_gpt_server.py usb
 python arm_gpt_server.py serial
 ```
 
-The generated RAG index is `data/arm_index.jsonl`. If the index is missing, the server still runs, but ARM documentation retrieval will be unavailable.
+## Direct Codex CLI Backend
 
-## Codex CLI Backend
-
-Install Python dependencies:
+Use this for Codex-only testing:
 
 ```bash
 python3 -m venv venv
@@ -158,7 +195,7 @@ In another terminal, run one backend with the first PTY path:
 
 ```bash
 source venv/bin/activate
-python serial_codex_interface.py --port /dev/pts/X
+python acorn_server.py usb --port-path /dev/pts/X
 ```
 
 In a third terminal, connect to the second PTY path:
@@ -167,7 +204,7 @@ In a third terminal, connect to the second PTY path:
 screen /dev/pts/Y 9600
 ```
 
-The same PTY approach works for `arm_gpt_server.py` and `serial_llm_interface_lite.py`; pass the PTY with each script's serial-port option.
+The same PTY approach works for `serial_codex_interface.py` and `serial_llm_interface_lite.py`; pass the PTY with each script's serial-port option.
 
 ## Troubleshooting
 
